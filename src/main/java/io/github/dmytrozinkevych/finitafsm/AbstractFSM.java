@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractStateMachine {
+public abstract class AbstractFSM {
 
     //TODO: ensure proper work in concurrent environment
     private Map<FSMState, Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>>> statesWithTransitions;
 
-    protected AbstractStateMachine() { }
+    protected AbstractFSM() { }
 
     protected void setTransitions(Collection<FSMTransition> transitions) {
         statesWithTransitions = new HashMap<>();

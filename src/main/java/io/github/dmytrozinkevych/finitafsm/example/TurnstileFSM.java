@@ -1,13 +1,13 @@
 package io.github.dmytrozinkevych.finitafsm.example;
 
-import io.github.dmytrozinkevych.finitafsm.AbstractStateMachine;
+import io.github.dmytrozinkevych.finitafsm.AbstractFSM;
 import io.github.dmytrozinkevych.finitafsm.FSMEvent;
 import io.github.dmytrozinkevych.finitafsm.FSMState;
 import io.github.dmytrozinkevych.finitafsm.FSMTransition;
 
 import java.util.List;
 
-public class TurnstileFSM extends AbstractStateMachine {
+public class TurnstileFSM extends AbstractFSM {
 
     public enum State implements FSMState {
         LOCKED, UNLOCKED;
