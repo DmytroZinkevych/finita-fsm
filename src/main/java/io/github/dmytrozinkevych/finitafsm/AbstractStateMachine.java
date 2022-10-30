@@ -7,9 +7,11 @@ import java.util.Map;
 public abstract class AbstractStateMachine {
 
     //TODO: ensure proper work in concurrent environment
-    private final Map<FSMState, Map<FSMEvent, Pair<Runnable, FSMState>>> statesWithTransitions;
+    private Map<FSMState, Map<FSMEvent, Pair<Runnable, FSMState>>> statesWithTransitions;
 
-    protected AbstractStateMachine(Collection<FSMTransition> transitions) {
+    protected AbstractStateMachine() {}
+
+    protected void setTransitions(Collection<FSMTransition> transitions) {
         statesWithTransitions = new HashMap<>();
         for (var transition : transitions) {
             var oldState = transition.oldState();
