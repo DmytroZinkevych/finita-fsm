@@ -1,14 +1,13 @@
 package io.github.dmytrozinkevych.finitafsm.example;
 
-import io.github.dmytrozinkevych.finitafsm.FSMState;
-
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Turnstile FSM states:");
         var turnstileFSM = new TurnstileFSM();
-        FSMState currentState = TurnstileFSM.State.LOCKED;
-        currentState = turnstileFSM.trigger(currentState, TurnstileFSM.Event.PUSH);
-        currentState = turnstileFSM.trigger(currentState, TurnstileFSM.Event.COIN);
-        turnstileFSM.trigger(currentState, TurnstileFSM.Event.PUSH);
+        System.out.println("=== Turnstile FSM ===");
+        System.out.println("Initial state: " + turnstileFSM.getCurrentState());
+        System.out.println("Transitions:");
+        turnstileFSM.trigger(TurnstileFSM.Event.PUSH);
+        turnstileFSM.trigger(TurnstileFSM.Event.COIN);
+        turnstileFSM.trigger(TurnstileFSM.Event.PUSH);
     }
 }

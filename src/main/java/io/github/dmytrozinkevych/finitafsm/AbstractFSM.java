@@ -9,7 +9,19 @@ public abstract class AbstractFSM {
     //TODO: ensure proper work in concurrent environment
     private Map<FSMState, Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>>> statesWithTransitions;
 
-    protected AbstractFSM() { }
+    private FSMState currentState;
+
+    protected AbstractFSM(FSMState initialState) {
+        currentState = initialState;
+    }
+
+    public FSMState getCurrentState() {
+        return currentState;
+    }
+
+    protected void setCurrentState(FSMState currentState) {
+        this.currentState = currentState;
+    }
 
     protected void setTransitions(Collection<FSMTransition> transitions) {
         statesWithTransitions = new HashMap<>();
@@ -27,11 +39,11 @@ public abstract class AbstractFSM {
         }
     }
 
-    public FSMState trigger(FSMState currentState, FSMEvent event) {
+    public FSMState trigger(FSMEvent event) {
         var actionNewStatePair = statesWithTransitions.get(currentState).get(event);
         var newState = actionNewStatePair.right();
         actionNewStatePair.left().accept(currentState, event, newState);
+        currentState = newState;
         return newState;
-        //TODO: save current state in machine
     }
 }

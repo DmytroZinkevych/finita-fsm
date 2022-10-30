@@ -18,8 +18,8 @@ public class TurnstileFSM extends AbstractFSM {
     }
 
     public TurnstileFSM() {
-        super();
-        final List<FSMTransition> transitions = List.of(
+        super(State.LOCKED);
+        final var transitions = List.of(
                 new FSMTransition(State.LOCKED, Event.COIN, this::logTransition, State.UNLOCKED),
                 new FSMTransition(State.LOCKED, Event.PUSH, this::logTransition, State.LOCKED),
                 new FSMTransition(State.UNLOCKED, Event.COIN, this::logTransition, State.UNLOCKED),
