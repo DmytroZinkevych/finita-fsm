@@ -1,3 +1,3 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-public interface FSMState {}
+public interface FSMState { }

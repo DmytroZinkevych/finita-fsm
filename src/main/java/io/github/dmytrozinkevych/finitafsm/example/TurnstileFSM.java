@@ -28,8 +28,7 @@ public class TurnstileFSM extends AbstractStateMachine {
         setTransitions(transitions);
     }
 
-    private void logTransition() {
-        // TODO: add info about transition as arguments
-        System.err.println("Transition");
+    private void logTransition(FSMState currentState, FSMEvent event, FSMState newState) {
+        System.out.printf("Transition: %s on %s -> %s%n", currentState, event, newState);
     }
 }

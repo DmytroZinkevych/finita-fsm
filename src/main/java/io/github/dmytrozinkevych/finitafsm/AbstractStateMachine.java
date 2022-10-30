@@ -7,15 +7,15 @@ import java.util.Map;
 public abstract class AbstractStateMachine {
 
     //TODO: ensure proper work in concurrent environment
-    private Map<FSMState, Map<FSMEvent, Pair<Runnable, FSMState>>> statesWithTransitions;
+    private Map<FSMState, Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>>> statesWithTransitions;
 
-    protected AbstractStateMachine() {}
+    protected AbstractStateMachine() { }
 
     protected void setTransitions(Collection<FSMTransition> transitions) {
         statesWithTransitions = new HashMap<>();
         for (var transition : transitions) {
             var oldState = transition.oldState();
-            Map<FSMEvent, Pair<Runnable, FSMState>> eventMap;
+            Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>> eventMap;
             if (statesWithTransitions.containsKey(oldState)) {
                 eventMap = statesWithTransitions.get(oldState);
             } else {
@@ -29,8 +29,9 @@ public abstract class AbstractStateMachine {
 
     public FSMState trigger(FSMState currentState, FSMEvent event) {
         var actionNewStatePair = statesWithTransitions.get(currentState).get(event);
-        actionNewStatePair.left().run();
-        return actionNewStatePair.right();
+        var newState = actionNewStatePair.right();
+        actionNewStatePair.left().accept(currentState, event, newState);
+        return newState;
         //TODO: save current state in machine
     }
 }
