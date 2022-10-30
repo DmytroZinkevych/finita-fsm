@@ -11,21 +11,10 @@ public class TurnstileFSM extends AbstractStateMachine {
 
     public enum State implements FSMState {
         LOCKED, UNLOCKED;
-
-        @Override
-        public String getName() {
-            return this.toString();
-        }
-
     }
 
     public enum Event implements FSMEvent {
         PUSH, COIN;
-
-        @Override
-        public String getName() {
-            return this.toString();
-        }
     }
 
     public TurnstileFSM() {
