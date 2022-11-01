@@ -28,6 +28,16 @@ public class TurnstileFSM extends AbstractFSM {
         setTransitions(transitions);
     }
 
+    @Override
+    protected void beforeEachTransition(FSMState currentState, FSMEvent event, FSMState newState) {
+        System.out.printf("--- Before transition from %s (on %s) to %s ---%n", currentState, event, newState);
+    }
+
+    @Override
+    protected void afterEachTransition(FSMState currentState, FSMEvent event, FSMState newState) {
+        System.out.printf("--- After transition from %s (on %s) to %s ---%n%n", currentState, event, newState);
+    }
+
     private void logTransition(FSMState currentState, FSMEvent event, FSMState newState) {
         System.out.printf("Transition: %s on %s -> %s%n", currentState, event, newState);
     }
