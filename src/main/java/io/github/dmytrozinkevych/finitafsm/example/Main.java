@@ -3,9 +3,9 @@ package io.github.dmytrozinkevych.finitafsm.example;
 public class Main {
     public static void main(String[] args) {
         var turnstileFSM = new TurnstileFSM();
-        System.out.println("=== Turnstile FSM ===");
-        System.out.println("Initial state: " + turnstileFSM.getCurrentState());
-        System.out.println("Transitions:");
+        System.out.println("\n========== Turnstile FSM ==========\n");
+        System.out.println("Initial state: " + turnstileFSM.getCurrentState() + "\n");
+        System.out.println("Transitions:\n");
         turnstileFSM.trigger(TurnstileFSM.Event.PUSH);
         turnstileFSM.trigger(TurnstileFSM.Event.COIN);
         turnstileFSM.trigger(TurnstileFSM.Event.PUSH);

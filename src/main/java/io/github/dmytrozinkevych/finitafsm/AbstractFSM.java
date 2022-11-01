@@ -39,11 +39,21 @@ public abstract class AbstractFSM {
         }
     }
 
+    protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+    protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
+
     public FSMState trigger(FSMEvent event) {
         var actionNewStatePair = statesWithTransitions.get(currentState).get(event);
+        var action = actionNewStatePair.left();
+        var oldState = currentState;
         var newState = actionNewStatePair.right();
-        actionNewStatePair.left().accept(currentState, event, newState);
+
+        beforeEachTransition(oldState, event, newState);
+        action.accept(oldState, event, newState);
         currentState = newState;
-        return newState;
+        afterEachTransition(oldState, event, newState);
+
+        return currentState;
     }
 }
