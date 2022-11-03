@@ -1,5 +1,8 @@
 package io.github.dmytrozinkevych.finitafsm;
 
+import io.github.dmytrozinkevych.finitafsm.exception.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exception.FSMHasNoTransitionsSetException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +35,9 @@ public abstract class AbstractFSM {
                 eventMap = new HashMap<>();
                 statesWithTransitions.put(oldState, eventMap);
             }
-            // TODO: throw exception if event already exists
+            if (eventMap.containsKey(transition.event())) {
+                throw new DuplicateFSMEventException();
+            }
             eventMap.put(transition.event(), new Pair<>(transition.action(), transition.newState()));
         }
     }
@@ -40,7 +45,6 @@ public abstract class AbstractFSM {
     protected void setStateActions(Set<FSMStateActions> stateActions) {
         statesEnterExitActions = new HashMap<>();
         for (var stateAction : stateActions) {
-            //TODO: check if state exists in statesWithTransitions
             statesEnterExitActions.put(
                     stateAction.state(),
                     new Pair<>(stateAction.onEnterState(), stateAction.onExitState())
@@ -53,7 +57,9 @@ public abstract class AbstractFSM {
     protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
     public FSMState trigger(FSMEvent event) {
-        // TODO: throw exception if statesWithTransitions is null or empty
+        if (statesWithTransitions == null || statesWithTransitions.isEmpty()) {
+            throw new FSMHasNoTransitionsSetException();
+        }
         var actionNewStatePair = statesWithTransitions.get(currentState).get(event);
         var oldState = currentState;
         var transitionAction = actionNewStatePair.left();
@@ -70,6 +76,6 @@ public abstract class AbstractFSM {
         }
         afterEachTransition(oldState, event, newState);
 
-        return currentState;
+        return newState;
     }
 }
