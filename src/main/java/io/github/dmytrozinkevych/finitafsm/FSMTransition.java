@@ -1,5 +1,7 @@
 package io.github.dmytrozinkevych.finitafsm;
 
+import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
+
 import java.util.Objects;
 
 public record FSMTransition(

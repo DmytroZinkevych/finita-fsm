@@ -2,6 +2,8 @@ package io.github.dmytrozinkevych.finitafsm;
 
 import io.github.dmytrozinkevych.finitafsm.exception.DuplicateFSMEventException;
 import io.github.dmytrozinkevych.finitafsm.exception.FSMHasNoTransitionsSetException;
+import io.github.dmytrozinkevych.finitafsm.utils.Pair;
+import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
 
 import java.util.HashMap;
 import java.util.Map;
