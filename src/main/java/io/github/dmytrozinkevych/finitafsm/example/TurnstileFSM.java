@@ -5,7 +5,7 @@ import io.github.dmytrozinkevych.finitafsm.FSMEvent;
 import io.github.dmytrozinkevych.finitafsm.FSMState;
 import io.github.dmytrozinkevych.finitafsm.FSMTransition;
 
-import java.util.List;
+import java.util.Set;
 
 public class TurnstileFSM extends AbstractFSM {
 
@@ -19,7 +19,7 @@ public class TurnstileFSM extends AbstractFSM {
 
     public TurnstileFSM() {
         super(State.LOCKED);
-        final var transitions = List.of(
+        final var transitions = Set.of(
                 new FSMTransition(State.LOCKED, Event.COIN, this::logTransition, State.UNLOCKED),
                 new FSMTransition(State.LOCKED, Event.PUSH, this::logTransition, State.LOCKED),
                 new FSMTransition(State.UNLOCKED, Event.COIN, this::logTransition, State.UNLOCKED),

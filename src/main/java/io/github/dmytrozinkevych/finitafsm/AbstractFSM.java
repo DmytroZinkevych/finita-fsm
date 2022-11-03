@@ -1,8 +1,8 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractFSM {
 
@@ -19,11 +19,7 @@ public abstract class AbstractFSM {
         return currentState;
     }
 
-    protected void setCurrentState(FSMState currentState) {
-        this.currentState = currentState;
-    }
-
-    protected void setTransitions(Collection<FSMTransition> transitions) {
+    protected void setTransitions(Set<FSMTransition> transitions) {
         statesWithTransitions = new HashMap<>();
         for (var transition : transitions) {
             var oldState = transition.oldState();
