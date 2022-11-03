@@ -9,6 +9,8 @@ public abstract class AbstractFSM {
     //TODO: ensure proper work in concurrent environment
     private Map<FSMState, Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>>> statesWithTransitions;
 
+    private Map<FSMState, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, TriConsumer<FSMState, FSMEvent, FSMState>>> statesEnterExitActions;
+
     private FSMState currentState;
 
     protected AbstractFSM(FSMState initialState) {
@@ -35,19 +37,37 @@ public abstract class AbstractFSM {
         }
     }
 
+    protected void setStateActions(Set<FSMStateActions> stateActions) {
+        statesEnterExitActions = new HashMap<>();
+        for (var stateAction : stateActions) {
+            //TODO: check if state exists in statesWithTransitions
+            statesEnterExitActions.put(
+                    stateAction.state(),
+                    new Pair<>(stateAction.onEnterState(), stateAction.onExitState())
+            );
+        }
+    }
+
     protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
     protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
     public FSMState trigger(FSMEvent event) {
+        // TODO: throw exception if statesWithTransitions is null or empty
         var actionNewStatePair = statesWithTransitions.get(currentState).get(event);
-        var action = actionNewStatePair.left();
         var oldState = currentState;
+        var transitionAction = actionNewStatePair.left();
         var newState = actionNewStatePair.right();
 
         beforeEachTransition(oldState, event, newState);
-        action.accept(oldState, event, newState);
+        if (statesEnterExitActions != null && statesEnterExitActions.containsKey(oldState)) {
+            statesEnterExitActions.get(oldState).right().accept(oldState, event, newState);
+        }
+        transitionAction.accept(oldState, event, newState);
         currentState = newState;
+        if (statesEnterExitActions != null && statesEnterExitActions.containsKey(newState)) {
+            statesEnterExitActions.get(newState).left().accept(oldState, event, newState);
+        }
         afterEachTransition(oldState, event, newState);
 
         return currentState;
