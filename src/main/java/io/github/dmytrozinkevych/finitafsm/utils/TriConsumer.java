@@ -1,4 +1,4 @@
-package io.github.dmytrozinkevych.finitafsm;
+package io.github.dmytrozinkevych.finitafsm.utils;
 
 @FunctionalInterface
 public interface TriConsumer<A, B, C> {

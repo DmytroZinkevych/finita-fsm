@@ -1,13 +1,20 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-import java.util.Collection;
+import io.github.dmytrozinkevych.finitafsm.exception.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exception.FSMHasNoTransitionsSetException;
+import io.github.dmytrozinkevych.finitafsm.utils.Pair;
+import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractFSM {
 
     //TODO: ensure proper work in concurrent environment
     private Map<FSMState, Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>>> statesWithTransitions;
+
+    private Map<FSMState, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, TriConsumer<FSMState, FSMEvent, FSMState>>> statesEnterExitActions;
 
     private FSMState currentState;
 
@@ -19,11 +26,7 @@ public abstract class AbstractFSM {
         return currentState;
     }
 
-    protected void setCurrentState(FSMState currentState) {
-        this.currentState = currentState;
-    }
-
-    protected void setTransitions(Collection<FSMTransition> transitions) {
+    protected void setTransitions(Set<FSMTransition> transitions) {
         statesWithTransitions = new HashMap<>();
         for (var transition : transitions) {
             var oldState = transition.oldState();
@@ -34,8 +37,20 @@ public abstract class AbstractFSM {
                 eventMap = new HashMap<>();
                 statesWithTransitions.put(oldState, eventMap);
             }
-            // TODO: throw exception if event already exists
+            if (eventMap.containsKey(transition.event())) {
+                throw new DuplicateFSMEventException();
+            }
             eventMap.put(transition.event(), new Pair<>(transition.action(), transition.newState()));
+        }
+    }
+
+    protected void setStateActions(Set<FSMStateActions> stateActions) {
+        statesEnterExitActions = new HashMap<>();
+        for (var stateAction : stateActions) {
+            statesEnterExitActions.put(
+                    stateAction.state(),
+                    new Pair<>(stateAction.onEnterState(), stateAction.onExitState())
+            );
         }
     }
 
@@ -44,16 +59,25 @@ public abstract class AbstractFSM {
     protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
     public FSMState trigger(FSMEvent event) {
+        if (statesWithTransitions == null || statesWithTransitions.isEmpty()) {
+            throw new FSMHasNoTransitionsSetException();
+        }
         var actionNewStatePair = statesWithTransitions.get(currentState).get(event);
-        var action = actionNewStatePair.left();
         var oldState = currentState;
+        var transitionAction = actionNewStatePair.left();
         var newState = actionNewStatePair.right();
 
         beforeEachTransition(oldState, event, newState);
-        action.accept(oldState, event, newState);
+        if (statesEnterExitActions != null && statesEnterExitActions.containsKey(oldState)) {
+            statesEnterExitActions.get(oldState).right().accept(oldState, event, newState);
+        }
+        transitionAction.accept(oldState, event, newState);
         currentState = newState;
+        if (statesEnterExitActions != null && statesEnterExitActions.containsKey(newState)) {
+            statesEnterExitActions.get(newState).left().accept(oldState, event, newState);
+        }
         afterEachTransition(oldState, event, newState);
 
-        return currentState;
+        return newState;
     }
 }
