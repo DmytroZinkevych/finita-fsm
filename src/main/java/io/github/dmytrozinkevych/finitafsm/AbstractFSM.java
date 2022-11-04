@@ -1,8 +1,8 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-import io.github.dmytrozinkevych.finitafsm.exception.DuplicateFSMEventException;
-import io.github.dmytrozinkevych.finitafsm.exception.FSMHasNoTransitionsSetException;
-import io.github.dmytrozinkevych.finitafsm.exception.NoSuchTransitionException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.FSMHasNoTransitionsSetException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.NoSuchTransitionException;
 import io.github.dmytrozinkevych.finitafsm.utils.Pair;
 import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
 

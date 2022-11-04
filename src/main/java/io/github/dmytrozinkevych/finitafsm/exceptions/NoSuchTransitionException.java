@@ -1,4 +1,4 @@
-package io.github.dmytrozinkevych.finitafsm.exception;
+package io.github.dmytrozinkevych.finitafsm.exceptions;
 
 import io.github.dmytrozinkevych.finitafsm.FSMEvent;
 import io.github.dmytrozinkevych.finitafsm.FSMState;

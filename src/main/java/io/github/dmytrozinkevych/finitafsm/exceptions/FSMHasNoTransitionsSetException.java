@@ -1,3 +1,3 @@
-package io.github.dmytrozinkevych.finitafsm.exception;
+package io.github.dmytrozinkevych.finitafsm.exceptions;
 
 public class FSMHasNoTransitionsSetException extends RuntimeException { }
