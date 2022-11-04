@@ -7,11 +7,11 @@ import java.util.Set;
 public class TurnstileFSM extends AbstractFSM {
 
     public enum State implements FSMState {
-        LOCKED, UNLOCKED;
+        LOCKED, UNLOCKED
     }
 
     public enum Event implements FSMEvent {
-        PUSH, COIN;
+        PUSH, COIN
     }
 
     public TurnstileFSM() {

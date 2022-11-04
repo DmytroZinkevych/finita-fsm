@@ -1,12 +1,14 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-import io.github.dmytrozinkevych.finitafsm.exception.DuplicateFSMEventException;
-import io.github.dmytrozinkevych.finitafsm.exception.FSMHasNoTransitionsSetException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.FSMHasNoTransitionsSetException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.NoSuchTransitionException;
 import io.github.dmytrozinkevych.finitafsm.utils.Pair;
 import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public abstract class AbstractFSM {
@@ -62,7 +64,10 @@ public abstract class AbstractFSM {
         if (statesWithTransitions == null || statesWithTransitions.isEmpty()) {
             throw new FSMHasNoTransitionsSetException();
         }
-        var actionNewStatePair = statesWithTransitions.get(currentState).get(event);
+        var actionNewStatePair = Optional.ofNullable(statesWithTransitions.get(currentState))
+                .map(stateTransitions -> stateTransitions.get(event))
+                .orElseThrow(() -> new NoSuchTransitionException(currentState, event));
+
         var oldState = currentState;
         var transitionAction = actionNewStatePair.left();
         var newState = actionNewStatePair.right();
