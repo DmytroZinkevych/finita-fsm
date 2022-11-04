@@ -6,6 +6,6 @@ import io.github.dmytrozinkevych.finitafsm.FSMState;
 public class NoSuchTransitionException extends RuntimeException {
 
     public NoSuchTransitionException(FSMState state, FSMEvent event) {
-        super("State " + state + " does not have transition for event " + event);
+        super("State '%s' does not have transition for event '%s'".formatted(state, event));
     }
 }
