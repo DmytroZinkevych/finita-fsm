@@ -20,6 +20,8 @@ public abstract class AbstractFSM {
 
     private FSMState currentState;
 
+    private FSMEvent nextEvent;
+
     protected AbstractFSM(FSMState initialState) {
         currentState = initialState;
     }
@@ -83,6 +85,16 @@ public abstract class AbstractFSM {
         }
         afterEachTransition(oldState, event, newState);
 
+        if (nextEvent != null) {
+            var newEvent = nextEvent;
+            nextEvent = null;
+            return trigger(newEvent);
+        }
+
         return newState;
+    }
+
+    protected void triggerNext(FSMEvent event) {
+        nextEvent = event;
     }
 }

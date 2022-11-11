@@ -9,5 +9,9 @@ public class Main {
         turnstileFSM.trigger(TurnstileFSM.Event.PUSH);
         turnstileFSM.trigger(TurnstileFSM.Event.COIN);
         turnstileFSM.trigger(TurnstileFSM.Event.PUSH);
+        System.out.println("--- Turnstile test start ---\n");
+        turnstileFSM.trigger(TurnstileFSM.Event.TEST_WORK);
+        System.out.println("--- Turnstile test finish ---\n");
+        turnstileFSM.trigger(TurnstileFSM.Event.PUSH);
     }
 }
