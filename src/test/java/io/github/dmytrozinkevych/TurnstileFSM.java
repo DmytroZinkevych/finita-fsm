@@ -1,4 +1,4 @@
-package io.github.dmytrozinkevych.finitafsm.example;
+package io.github.dmytrozinkevych;
 
 import io.github.dmytrozinkevych.finitafsm.*;
 
