@@ -1,7 +1,5 @@
-package io.github.dmytrozinkevych;
+package io.github.dmytrozinkevych.finitafsm;
 
-import io.github.dmytrozinkevych.finitafsm.FSMStateActions;
-import io.github.dmytrozinkevych.finitafsm.FSMTransition;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
