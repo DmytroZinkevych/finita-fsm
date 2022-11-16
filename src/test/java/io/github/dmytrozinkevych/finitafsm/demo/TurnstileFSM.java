@@ -1,4 +1,4 @@
-package io.github.dmytrozinkevych.finitafsm.example;
+package io.github.dmytrozinkevych.finitafsm.demo;
 
 import io.github.dmytrozinkevych.finitafsm.*;
 
@@ -6,28 +6,28 @@ import java.util.Set;
 
 public class TurnstileFSM extends AbstractFSM {
 
-    public enum State implements FSMState {
+    public enum TurnstileState implements FSMState {
         LOCKED, UNLOCKED
     }
 
-    public enum Event implements FSMEvent {
+    public enum TurnstileEvent implements FSMEvent {
         PUSH, COIN, TEST_WORK
     }
 
     public TurnstileFSM() {
-        super(State.LOCKED);
+        super(TurnstileState.LOCKED);
         final var transitions = Set.of(
-                new FSMTransition(State.LOCKED, Event.COIN, this::logTransition, State.UNLOCKED),
-                new FSMTransition(State.LOCKED, Event.PUSH, this::logTransition, State.LOCKED),
-                new FSMTransition(State.UNLOCKED, Event.COIN, this::logTransition, State.UNLOCKED),
-                new FSMTransition(State.UNLOCKED, Event.PUSH, this::logTransition, State.LOCKED),
-                new FSMTransition(State.LOCKED, Event.TEST_WORK, this::testWork, State.UNLOCKED)
+                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.COIN, this::logTransition, TurnstileState.UNLOCKED),
+                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.PUSH, this::logTransition, TurnstileState.LOCKED),
+                new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.COIN, this::logTransition, TurnstileState.UNLOCKED),
+                new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.PUSH, this::logTransition, TurnstileState.LOCKED),
+                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.TEST_WORK, this::testWork, TurnstileState.UNLOCKED)
         );
         setTransitions(transitions);
 
         final var stateActions = Set.of(
-                new FSMStateActions(State.LOCKED, this::logEnterState, this::logExitState),
-                new FSMStateActions(State.UNLOCKED, this::logEnterState, this::logExitState)
+                new FSMStateActions(TurnstileState.LOCKED, this::logEnterState, this::logExitState),
+                new FSMStateActions(TurnstileState.UNLOCKED, this::logEnterState, this::logExitState)
         );
         setStateActions(stateActions);
     }
@@ -57,6 +57,6 @@ public class TurnstileFSM extends AbstractFSM {
     private void testWork(FSMState oldState, FSMEvent event, FSMState newState) {
         System.out.printf("~ Transition: %s on %s -> %s ~%n", oldState, event, newState);
         System.out.println("~ Testing the work of the turnstile ~");
-        triggerNext(Event.PUSH);
+        triggerNext(TurnstileEvent.PUSH);
     }
 }

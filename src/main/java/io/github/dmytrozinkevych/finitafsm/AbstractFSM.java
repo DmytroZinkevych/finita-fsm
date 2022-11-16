@@ -78,7 +78,9 @@ public abstract class AbstractFSM {
         if (statesEnterExitActions != null && statesEnterExitActions.containsKey(oldState)) {
             statesEnterExitActions.get(oldState).right().accept(oldState, event, newState);
         }
-        transitionAction.accept(oldState, event, newState);
+        if (transitionAction != null) {
+            transitionAction.accept(oldState, event, newState);
+        }
         currentState = newState;
         if (statesEnterExitActions != null && statesEnterExitActions.containsKey(newState)) {
             statesEnterExitActions.get(newState).left().accept(oldState, event, newState);
