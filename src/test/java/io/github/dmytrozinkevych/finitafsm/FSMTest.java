@@ -77,4 +77,15 @@ class FSMTest {
 
         assertThrows(NoSuchTransitionException.class, () -> fsm.trigger(Event.E2));
     }
+
+    @Test
+    void testTriggeringEventWithActionSetAsNull() {
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, null, State.S2)
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+        fsm.setTransitions(transitions);
+
+        assertDoesNotThrow(() -> fsm.trigger(Event.E1));
+    }
 }
