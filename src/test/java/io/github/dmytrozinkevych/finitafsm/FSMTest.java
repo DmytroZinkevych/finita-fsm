@@ -1,11 +1,18 @@
 package io.github.dmytrozinkevych.finitafsm;
 
+import io.github.dmytrozinkevych.finitafsm.exceptions.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.FSMHasNoTransitionsSetException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.NoSuchTransitionException;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class FSMTest {
+
+    private void emptyAction(FSMState oldState, FSMEvent event, FSMState newState) { }
+
     @Test
     void testEqualsAndHashCodeMethodsForFSMTransition() {
         var transition1 = new FSMTransition(State.S1, Event.E1, (s1, e, s2) -> { }, State.S2);
@@ -40,5 +47,34 @@ class FSMTest {
         assertEquals(stateActions3, stateActions4);
     }
 
-    //TODO: add test cases for FSM exceptions
+    @Test
+    void testTriggeringFSMWithNoTransitionsSetThrowsException() {
+        var fsm = new AbstractFSM(State.S1) { };
+
+        assertThrows(FSMHasNoTransitionsSetException.class, () -> fsm.trigger(Event.E1));
+    }
+
+    @Test
+    void testDuplicatingOfFSMEventThrowsException() {
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, this::emptyAction, State.S2),
+                new FSMTransition(State.S1, Event.E2, this::emptyAction, State.S2),
+                new FSMTransition(State.S1, Event.E2, this::emptyAction, State.S1)
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+
+        assertThrows(DuplicateFSMEventException.class, () -> fsm.setTransitions(transitions));
+    }
+
+    @Test
+    void testTriggeringEventWhichIsNotSetForCurrentStateThrowsException() {
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, this::emptyAction, State.S2),
+                new FSMTransition(State.S2, Event.E2, this::emptyAction, State.S1)
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+        fsm.setTransitions(transitions);
+
+        assertThrows(NoSuchTransitionException.class, () -> fsm.trigger(Event.E2));
+    }
 }
