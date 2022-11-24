@@ -11,7 +11,7 @@ public class TurnstileFSM extends AbstractFSM {
     }
 
     public enum TurnstileEvent implements FSMEvent {
-        PUSH, COIN, TEST_WORK
+        PUSH, COIN, QUICK_PASS
     }
 
     public TurnstileFSM() {
@@ -21,7 +21,7 @@ public class TurnstileFSM extends AbstractFSM {
                 new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.PUSH, this::logTransition, TurnstileState.LOCKED),
                 new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.COIN, this::logTransition, TurnstileState.UNLOCKED),
                 new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.PUSH, this::logTransition, TurnstileState.LOCKED),
-                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.TEST_WORK, this::testWork, TurnstileState.UNLOCKED)
+                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.QUICK_PASS, this::quickPass, TurnstileState.UNLOCKED)
         );
         setTransitions(transitions);
 
@@ -54,9 +54,9 @@ public class TurnstileFSM extends AbstractFSM {
         System.out.printf(" Exiting from the state: %s%n", oldState);
     }
 
-    private void testWork(FSMState oldState, FSMEvent event, FSMState newState) {
+    private void quickPass(FSMState oldState, FSMEvent event, FSMState newState) {
         System.out.printf("~ Transition: %s on %s -> %s ~%n", oldState, event, newState);
-        System.out.println("~ Testing the work of the turnstile ~");
+        System.out.println("~ Quick pass triggered ~");
         triggerNext(TurnstileEvent.PUSH);
     }
 }

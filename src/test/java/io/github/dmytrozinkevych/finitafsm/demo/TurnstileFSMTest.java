@@ -24,12 +24,12 @@ class TurnstileFSMTest {
         turnstileFSM.trigger(TurnstileFSM.TurnstileEvent.PUSH);
         assertEquals(TurnstileFSM.TurnstileState.LOCKED, turnstileFSM.getCurrentState());
 
-        System.out.println("--- Turnstile test start ---\n");
+        System.out.println("--- Quick pass start ---\n");
 
-        turnstileFSM.trigger(TurnstileFSM.TurnstileEvent.TEST_WORK);
+        turnstileFSM.trigger(TurnstileFSM.TurnstileEvent.QUICK_PASS);
         assertEquals(TurnstileFSM.TurnstileState.LOCKED, turnstileFSM.getCurrentState());
 
-        System.out.println("--- Turnstile test finish ---\n");
+        System.out.println("--- Quick pass finish ---\n");
 
         turnstileFSM.trigger(TurnstileFSM.TurnstileEvent.PUSH);
         assertEquals(TurnstileFSM.TurnstileState.LOCKED, turnstileFSM.getCurrentState());
