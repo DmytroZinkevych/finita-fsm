@@ -96,23 +96,19 @@ class FSMTest {
         var onEnterState1Called = new AtomicBoolean(false);
         var onEnterState2Called = new AtomicBoolean(false);
         var onExitState1Called = new AtomicBoolean(false);
-        var onExitState3Called = new AtomicBoolean(false);
 
         TriConsumer<FSMState, FSMEvent, FSMState> onEnterState1 = (s1, e, s2) -> onEnterState1Called.set(true);
         TriConsumer<FSMState, FSMEvent, FSMState> onEnterState2 = (s1, e, s2) -> onEnterState2Called.set(true);
         TriConsumer<FSMState, FSMEvent, FSMState> onExitState1 = (s1, e, s2) -> onExitState1Called.set(true);
-        TriConsumer<FSMState, FSMEvent, FSMState> onExitState3 = (s1, e, s2) -> onExitState3Called.set(true);
 
         var transitions = Set.of(
                 new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
-                new FSMTransition(State.S2, Event.E2, State.S3, this::emptyAction),
-                new FSMTransition(State.S3, Event.E1, State.S1, this::emptyAction),
-                new FSMTransition(State.S3, Event.E2, State.S4, this::emptyAction)
+                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction),
+                new FSMTransition(State.S3, Event.E1, State.S1, this::emptyAction)
         );
         var stateActions = Set.of(
                 new FSMStateActions(State.S1, onEnterState1, onExitState1),
-                new FSMStateActions(State.S2, onEnterState2, null),
-                new FSMStateActions(State.S3, null, onExitState3)
+                new FSMStateActions(State.S2, onEnterState2, null)
         );
         var fsm = new AbstractFSM(State.S3) { };
         fsm.setTransitions(transitions);
@@ -124,10 +120,22 @@ class FSMTest {
         assertDoesNotThrow(() -> fsm.trigger(Event.E1));
         assertTrue(onExitState1Called.get());
         assertTrue(onEnterState2Called.get());
+    }
 
-        assertDoesNotThrow(() -> fsm.trigger(Event.E2));
+    @Test
+    void testIfActionsOnEnterAndExitStateAreNullNoExceptionIsThrown() {
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
+                new FSMTransition(State.S2, Event.E2, State.S3, this::emptyAction)
+        );
+        var stateActions = Set.of(
+                new FSMStateActions(State.S1, null, null),
+                new FSMStateActions(State.S2, null, null)
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+        fsm.setTransitions(transitions);
+        fsm.setStateActions(stateActions);
 
-        assertDoesNotThrow(() -> fsm.trigger(Event.E2));
-        assertTrue(onExitState3Called.get());
+        assertDoesNotThrow(() -> fsm.trigger(Event.E1));
     }
 }
