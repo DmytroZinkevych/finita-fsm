@@ -102,7 +102,7 @@ public abstract class AbstractFSM {
         return newState;
     }
 
-    protected void triggerNext(FSMEvent event) {
+    protected void triggerAfterwards(FSMEvent event) {
         nextEvent = event;
     }
 }

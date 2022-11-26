@@ -57,6 +57,6 @@ public class TurnstileFSM extends AbstractFSM {
     private void quickPass(FSMState oldState, FSMEvent event, FSMState newState) {
         System.out.printf("~ Transition: %s on %s -> %s ~%n", oldState, event, newState);
         System.out.println("~ Quick pass triggered ~");
-        triggerNext(TurnstileEvent.PUSH);
+        triggerAfterwards(TurnstileEvent.PUSH);
     }
 }
