@@ -1,7 +1,7 @@
-name: Publish to GitHub Packages
+name: Test the project
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
     paths-ignore:
       - '.github/**'
@@ -9,11 +9,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
+  build-and-test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v3
 
@@ -29,10 +28,3 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: test
-
-      - name: Publish the package
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
