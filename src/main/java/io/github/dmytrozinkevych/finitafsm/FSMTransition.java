@@ -7,8 +7,8 @@ import java.util.Objects;
 public record FSMTransition(
         FSMState oldState,
         FSMEvent event,
-        TriConsumer<FSMState, FSMEvent, FSMState> action,
-        FSMState newState
+        FSMState newState,
+        TriConsumer<FSMState, FSMEvent, FSMState> action
 ) {
     @Override
     public boolean equals(Object o) {

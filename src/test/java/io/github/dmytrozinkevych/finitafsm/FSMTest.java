@@ -15,10 +15,10 @@ class FSMTest {
 
     @Test
     void testEqualsAndHashCodeMethodsForFSMTransition() {
-        var transition1 = new FSMTransition(State.S1, Event.E1, (s1, e, s2) -> { }, State.S2);
-        var transition2 = new FSMTransition(State.S1, Event.E1, (s1, e, s2) -> { }, State.S2);
-        var transition3 = new FSMTransition(State.S2, Event.E1, (s1, e, s2) -> { }, State.S2);
-        var transition4 = new FSMTransition(State.S2, Event.E1, null, State.S2);
+        var transition1 = new FSMTransition(State.S1, Event.E1, State.S2, (s1, e, s2) -> { });
+        var transition2 = new FSMTransition(State.S1, Event.E1, State.S2, (s1, e, s2) -> { });
+        var transition3 = new FSMTransition(State.S2, Event.E1, State.S2, (s1, e, s2) -> { });
+        var transition4 = new FSMTransition(State.S2, Event.E1, State.S2, null);
 
         assertEquals(transition1.hashCode(), transition2.hashCode());
         assertEquals(transition1, transition2);
@@ -57,9 +57,9 @@ class FSMTest {
     @Test
     void testDuplicatingOfFSMEventThrowsException() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, this::emptyAction, State.S2),
-                new FSMTransition(State.S1, Event.E2, this::emptyAction, State.S2),
-                new FSMTransition(State.S1, Event.E2, this::emptyAction, State.S1)
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
+                new FSMTransition(State.S1, Event.E2, State.S2, this::emptyAction),
+                new FSMTransition(State.S1, Event.E2, State.S1, this::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) { };
 
@@ -69,8 +69,8 @@ class FSMTest {
     @Test
     void testTriggeringEventWhichIsNotSetForCurrentStateThrowsException() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, this::emptyAction, State.S2),
-                new FSMTransition(State.S2, Event.E2, this::emptyAction, State.S1)
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
+                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);
@@ -81,7 +81,7 @@ class FSMTest {
     @Test
     void testTriggeringEventWithActionSetAsNull() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, null, State.S2)
+                new FSMTransition(State.S1, Event.E1, State.S2, null)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);
