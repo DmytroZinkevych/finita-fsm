@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
