@@ -136,6 +136,8 @@ class FSMTest {
         fsm.setTransitions(transitions);
         fsm.setStateActions(stateActions);
 
+        fail();
+
         assertDoesNotThrow(() -> fsm.trigger(Event.E1));
     }
 }
