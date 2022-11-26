@@ -17,11 +17,11 @@ public class TurnstileFSM extends AbstractFSM {
     public TurnstileFSM() {
         super(TurnstileState.LOCKED);
         final var transitions = Set.of(
-                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.COIN, this::logTransition, TurnstileState.UNLOCKED),
-                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.PUSH, this::logTransition, TurnstileState.LOCKED),
-                new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.COIN, this::logTransition, TurnstileState.UNLOCKED),
-                new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.PUSH, this::logTransition, TurnstileState.LOCKED),
-                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.QUICK_PASS, this::quickPass, TurnstileState.UNLOCKED)
+                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.COIN, TurnstileState.UNLOCKED, this::logTransition),
+                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.PUSH, TurnstileState.LOCKED, this::logTransition),
+                new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.COIN, TurnstileState.UNLOCKED, this::logTransition),
+                new FSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.PUSH, TurnstileState.LOCKED, this::logTransition),
+                new FSMTransition(TurnstileState.LOCKED, TurnstileEvent.QUICK_PASS, TurnstileState.UNLOCKED, this::quickPass)
         );
         setTransitions(transitions);
 
@@ -57,6 +57,6 @@ public class TurnstileFSM extends AbstractFSM {
     private void quickPass(FSMState oldState, FSMEvent event, FSMState newState) {
         System.out.printf("~ Transition: %s on %s -> %s ~%n", oldState, event, newState);
         System.out.println("~ Quick pass triggered ~");
-        triggerNext(TurnstileEvent.PUSH);
+        triggerAfterwards(TurnstileEvent.PUSH);
     }
 }
