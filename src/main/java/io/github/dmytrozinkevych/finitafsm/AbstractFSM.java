@@ -14,7 +14,7 @@ import java.util.Set;
 public abstract class AbstractFSM {
 
     //TODO: ensure proper work in concurrent environment
-    private Map<FSMState, Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>>> statesWithTransitions;
+    private Map<FSMState, Map<FSMEvent, Pair<FSMState, TriConsumer<FSMState, FSMEvent, FSMState>>>> statesWithTransitions;
 
     private Map<FSMState, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, TriConsumer<FSMState, FSMEvent, FSMState>>> statesEnterExitActions;
 
@@ -34,7 +34,7 @@ public abstract class AbstractFSM {
         statesWithTransitions = new HashMap<>();
         for (var transition : transitions) {
             var oldState = transition.oldState();
-            Map<FSMEvent, Pair<TriConsumer<FSMState, FSMEvent, FSMState>, FSMState>> eventMap;
+            Map<FSMEvent, Pair<FSMState, TriConsumer<FSMState, FSMEvent, FSMState>>> eventMap;
             if (statesWithTransitions.containsKey(oldState)) {
                 eventMap = statesWithTransitions.get(oldState);
             } else {
@@ -44,7 +44,7 @@ public abstract class AbstractFSM {
             if (eventMap.containsKey(transition.event())) {
                 throw new DuplicateFSMEventException();
             }
-            eventMap.put(transition.event(), new Pair<>(transition.action(), transition.newState()));
+            eventMap.put(transition.event(), new Pair<>(transition.newState(), transition.action()));
         }
     }
 
@@ -71,8 +71,8 @@ public abstract class AbstractFSM {
                 .orElseThrow(() -> new NoSuchTransitionException(currentState, event));
 
         var oldState = currentState;
-        var transitionAction = actionNewStatePair.left();
-        var newState = actionNewStatePair.right();
+        var newState = actionNewStatePair.left();
+        var transitionAction = actionNewStatePair.right();
 
         beforeEachTransition(oldState, event, newState);
         if (statesEnterExitActions != null && statesEnterExitActions.containsKey(oldState)) {
