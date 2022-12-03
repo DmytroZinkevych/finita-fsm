@@ -53,7 +53,7 @@ public abstract class AbstractFSM {
         for (var stateAction : stateActions) {
             statesEnterExitActions.put(
                     stateAction.state(),
-                    new Pair<>(stateAction.onEnterState(), stateAction.onExitState())
+                    new Pair<>(stateAction.enterStateAction(), stateAction.exitStateAction())
             );
         }
     }
