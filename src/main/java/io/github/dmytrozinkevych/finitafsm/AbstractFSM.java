@@ -66,6 +66,8 @@ public abstract class AbstractFSM {
 
     protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
+    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) { }
+
     private Optional<Pair<TriConsumer<FSMState, FSMEvent, FSMState>, TriConsumer<FSMState, FSMEvent, FSMState>>> getActionsForState(FSMState state) {
         return Optional.ofNullable(statesEnterExitActions)
                 .map(statesActionsMap -> statesActionsMap.get(state));
@@ -93,20 +95,51 @@ public abstract class AbstractFSM {
         var newState = actionNewStatePair.left();
         var transitionAction = actionNewStatePair.right();
 
-        beforeEachTransition(oldState, event, newState);
+        try {
+            beforeEachTransition(oldState, event, newState);
+        } catch (Exception ex) {
+            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.BEFORE_TRANSITION);
+            return oldState;
+        }
+
         var exitStateAction = getExitStateAction(oldState);
         if (exitStateAction.isPresent()) {
-            exitStateAction.get().accept(oldState, event, newState);
+            try {
+                exitStateAction.get().accept(oldState, event, newState);
+            } catch (Exception ex) {
+                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.EXIT_OLD_STATE);
+                return oldState;
+            }
         }
+
         if (transitionAction != null) {
-            transitionAction.accept(oldState, event, newState);
+            try {
+                transitionAction.accept(oldState, event, newState);
+                currentState = newState;
+            } catch (Exception ex) {
+                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION);
+                return oldState;
+            }
         }
-        currentState = newState;
+
         var enterStateAction = getEnterStateAction(newState);
         if (enterStateAction.isPresent()) {
-            enterStateAction.get().accept(oldState, event, newState);
+            try {
+                enterStateAction.get().accept(oldState, event, newState);
+            } catch (Exception ex) {
+                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.ENTER_NEW_STATE);
+                currentState = oldState;
+                return oldState;
+            }
         }
-        afterEachTransition(oldState, event, newState);
+
+        try {
+            afterEachTransition(oldState, event, newState);
+        } catch (Exception ex) {
+            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.AFTER_TRANSITION);
+            currentState = oldState;
+            return oldState;
+        }
 
         if (nextEvent != null) {
             var newEvent = nextEvent;
