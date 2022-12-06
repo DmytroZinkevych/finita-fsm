@@ -5,11 +5,14 @@ import io.github.dmytrozinkevych.finitafsm.exceptions.FSMHasNoTransitionsSetExce
 import io.github.dmytrozinkevych.finitafsm.exceptions.NoSuchTransitionException;
 import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class FSMTest {
 
@@ -91,15 +94,12 @@ class FSMTest {
         assertDoesNotThrow(() -> fsm.trigger(Event.E1));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void testRunningActionsOnEnterAndExitState() {
-        var onEnterState1Called = new AtomicBoolean(false);
-        var onEnterState2Called = new AtomicBoolean(false);
-        var onExitState1Called = new AtomicBoolean(false);
-
-        TriConsumer<FSMState, FSMEvent, FSMState> onEnterState1 = (s1, e, s2) -> onEnterState1Called.set(true);
-        TriConsumer<FSMState, FSMEvent, FSMState> onEnterState2 = (s1, e, s2) -> onEnterState2Called.set(true);
-        TriConsumer<FSMState, FSMEvent, FSMState> onExitState1 = (s1, e, s2) -> onExitState1Called.set(true);
+        TriConsumer<FSMState, FSMEvent, FSMState> onEnterState1 = mock(TriConsumer.class);
+        TriConsumer<FSMState, FSMEvent, FSMState> onEnterState2 = mock(TriConsumer.class);
+        TriConsumer<FSMState, FSMEvent, FSMState> onExitState1 = mock(TriConsumer.class);
 
         var transitions = Set.of(
                 new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
@@ -115,11 +115,12 @@ class FSMTest {
         fsm.setStateActions(stateActions);
 
         fsm.trigger(Event.E1);
-        assertTrue(onEnterState1Called.get());
+        verify(onEnterState1).accept(any(), any(), any());
 
         assertDoesNotThrow(() -> fsm.trigger(Event.E1));
-        assertTrue(onExitState1Called.get());
-        assertTrue(onEnterState2Called.get());
+        var inOrder = Mockito.inOrder(onExitState1, onEnterState2);
+        inOrder.verify(onExitState1).accept(any(), any(), any());
+        inOrder.verify(onEnterState2).accept(any(), any(), any());
     }
 
     @Test
