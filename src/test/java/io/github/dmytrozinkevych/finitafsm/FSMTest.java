@@ -1,6 +1,7 @@
 package io.github.dmytrozinkevych.finitafsm;
 
 import io.github.dmytrozinkevych.finitafsm.exceptions.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.FSMException;
 import io.github.dmytrozinkevych.finitafsm.exceptions.FSMHasNoTransitionsSetException;
 import io.github.dmytrozinkevych.finitafsm.exceptions.NoSuchTransitionException;
 import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
@@ -81,6 +82,7 @@ class FSMTest {
         fsm.setTransitions(transitions);
 
         assertThrows(NoSuchTransitionException.class, () -> fsm.trigger(Event.E2));
+        assertEquals(State.S1, fsm.getCurrentState());
     }
 
     @Test
@@ -138,5 +140,23 @@ class FSMTest {
         fsm.setStateActions(stateActions);
 
         assertDoesNotThrow(() -> fsm.trigger(Event.E1));
+    }
+
+    @Test
+    void testTransitionExceptionWhenOnTransitionExceptionIsNotOverridden() {
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, (s1, e, s2) -> { var n = 12 / 0; })
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+        fsm.setTransitions(transitions);
+        
+        assertThrows(FSMException.class, () -> fsm.trigger(Event.E1));
+        assertEquals(State.S1, fsm.getCurrentState());
+        
+        try {
+            fsm.trigger(Event.E1);
+        } catch (FSMException ex) {
+            assertEquals(ex.getCause().getClass(), ArithmeticException.class);
+        }
     }
 }
