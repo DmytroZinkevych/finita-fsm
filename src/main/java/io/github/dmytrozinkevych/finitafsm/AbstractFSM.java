@@ -1,6 +1,7 @@
 package io.github.dmytrozinkevych.finitafsm;
 
 import io.github.dmytrozinkevych.finitafsm.exceptions.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.FSMException;
 import io.github.dmytrozinkevych.finitafsm.exceptions.FSMHasNoTransitionsSetException;
 import io.github.dmytrozinkevych.finitafsm.exceptions.NoSuchTransitionException;
 import io.github.dmytrozinkevych.finitafsm.utils.Pair;
@@ -66,7 +67,9 @@ public abstract class AbstractFSM {
 
     protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
-    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) { }
+    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+        throw new FSMException(cause);
+    }
 
     private Optional<Pair<TriConsumer<FSMState, FSMEvent, FSMState>, TriConsumer<FSMState, FSMEvent, FSMState>>> getActionsForState(FSMState state) {
         return Optional.ofNullable(statesEnterExitActions)

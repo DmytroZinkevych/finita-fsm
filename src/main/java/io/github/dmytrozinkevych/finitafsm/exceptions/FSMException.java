@@ -9,4 +9,8 @@ public class FSMException extends RuntimeException {
     public FSMException(String message) {
         super(message);
     }
+
+    public FSMException(Throwable cause) {
+        super(cause);
+    }
 }
