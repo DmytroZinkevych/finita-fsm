@@ -130,8 +130,8 @@ public abstract class AbstractFSM {
             try {
                 enterStateAction.get().accept(oldState, event, newState);
             } catch (Exception ex) {
-                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.ENTER_NEW_STATE);
                 currentState = oldState;
+                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.ENTER_NEW_STATE);
                 return oldState;
             }
         }
@@ -139,8 +139,8 @@ public abstract class AbstractFSM {
         try {
             afterEachTransition(oldState, event, newState);
         } catch (Exception ex) {
-            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.AFTER_TRANSITION);
             currentState = oldState;
+            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.AFTER_TRANSITION);
             return oldState;
         }
 

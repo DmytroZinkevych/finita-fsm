@@ -157,6 +157,7 @@ class FSMTest {
             fsm.trigger(Event.E1);
         } catch (FSMException ex) {
             assertEquals(ex.getCause().getClass(), ArithmeticException.class);
+            assertEquals(State.S1, fsm.getCurrentState());
         }
     }
 }
