@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,6 +19,10 @@ import static org.mockito.Mockito.verify;
 class FSMTest {
 
     private void emptyAction(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+    private void throwArithmeticException(FSMState oldState, FSMEvent event, FSMState newState) {
+        var n = 12 / 0;
+    }
 
     @Test
     void testEqualsAndHashCodeMethodsForFSMTransition() {
@@ -145,7 +150,7 @@ class FSMTest {
     @Test
     void testTransitionExceptionWhenOnTransitionExceptionIsNotOverridden() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, (s1, e, s2) -> { var n = 12 / 0; })
+                new FSMTransition(State.S1, Event.E1, State.S2, this::throwArithmeticException)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);
@@ -159,5 +164,150 @@ class FSMTest {
             assertEquals(ex.getCause().getClass(), ArithmeticException.class);
             assertEquals(State.S1, fsm.getCurrentState());
         }
+    }
+
+    @Test
+    void testBeforeTransitionExceptionHandling() {
+        var transitionExceptionWasHandled = new AtomicBoolean(false);
+
+        var fsm = new AbstractFSM(State.S1) {
+            @Override
+            protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
+                throwArithmeticException(oldState, event, newState);
+            }
+
+            @Override
+            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+                if (transitionStage == FSMTransitionStage.BEFORE_TRANSITION) {
+                    transitionExceptionWasHandled.set(true);
+                    assertEquals(cause.getClass(), ArithmeticException.class);
+                }
+            }
+        };
+        fsm.setTransitions(
+                Set.of(
+                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                )
+        );
+
+        fsm.trigger(Event.E1);
+
+        assertTrue(transitionExceptionWasHandled.get());
+        assertEquals(State.S1, fsm.getCurrentState());
+    }
+
+    @Test
+    void testExitStateExceptionHandling() {
+        var transitionExceptionWasHandled = new AtomicBoolean(false);
+
+        var fsm = new AbstractFSM(State.S1) {
+            @Override
+            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+                if (transitionStage == FSMTransitionStage.EXIT_OLD_STATE) {
+                    transitionExceptionWasHandled.set(true);
+                    assertEquals(cause.getClass(), ArithmeticException.class);
+                }
+            }
+        };
+        fsm.setTransitions(
+                Set.of(
+                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                )
+        );
+        fsm.setStateActions(
+                Set.of(
+                        new FSMStateActions(State.S1, this::emptyAction, this::throwArithmeticException)
+                )
+        );
+
+        fsm.trigger(Event.E1);
+
+        assertTrue(transitionExceptionWasHandled.get());
+        assertEquals(State.S1, fsm.getCurrentState());
+    }
+
+    @Test
+    void testTransitionActionExceptionHandling() {
+        var transitionExceptionWasHandled = new AtomicBoolean(false);
+
+        var fsm = new AbstractFSM(State.S1) {
+            @Override
+            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+                if (transitionStage == FSMTransitionStage.TRANSITION_ACTION) {
+                    transitionExceptionWasHandled.set(true);
+                    assertEquals(cause.getClass(), ArithmeticException.class);
+                }
+            }
+        };
+        fsm.setTransitions(
+                Set.of(
+                        new FSMTransition(State.S1, Event.E1, State.S2, this::throwArithmeticException)
+                )
+        );
+
+        fsm.trigger(Event.E1);
+
+        assertTrue(transitionExceptionWasHandled.get());
+        assertEquals(State.S1, fsm.getCurrentState());
+    }
+
+    @Test
+    void testEnterStateExceptionHandling() {
+        var transitionExceptionWasHandled = new AtomicBoolean(false);
+
+        var fsm = new AbstractFSM(State.S1) {
+            @Override
+            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+                if (transitionStage == FSMTransitionStage.ENTER_NEW_STATE) {
+                    transitionExceptionWasHandled.set(true);
+                    assertEquals(cause.getClass(), ArithmeticException.class);
+                }
+            }
+        };
+        fsm.setTransitions(
+                Set.of(
+                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                )
+        );
+        fsm.setStateActions(
+                Set.of(
+                        new FSMStateActions(State.S2, this::throwArithmeticException, this::emptyAction)
+                )
+        );
+
+        fsm.trigger(Event.E1);
+
+        assertTrue(transitionExceptionWasHandled.get());
+        assertEquals(State.S1, fsm.getCurrentState());
+    }
+
+    @Test
+    void testAfterTransitionExceptionHandling() {
+        var transitionExceptionWasHandled = new AtomicBoolean(false);
+
+        var fsm = new AbstractFSM(State.S1) {
+            @Override
+            protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
+                throwArithmeticException(oldState, event, newState);
+            }
+
+            @Override
+            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+                if (transitionStage == FSMTransitionStage.AFTER_TRANSITION) {
+                    transitionExceptionWasHandled.set(true);
+                    assertEquals(cause.getClass(), ArithmeticException.class);
+                }
+            }
+        };
+        fsm.setTransitions(
+                Set.of(
+                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                )
+        );
+
+        fsm.trigger(Event.E1);
+
+        assertTrue(transitionExceptionWasHandled.get());
+        assertEquals(State.S1, fsm.getCurrentState());
     }
 }
