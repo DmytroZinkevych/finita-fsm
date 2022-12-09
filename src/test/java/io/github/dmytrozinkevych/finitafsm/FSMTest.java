@@ -26,9 +26,9 @@ class FSMTest {
 
     @Test
     void testEqualsAndHashCodeMethodsForFSMTransition() {
-        var transition1 = new FSMTransition(State.S1, Event.E1, State.S2, (s1, e, s2) -> { });
-        var transition2 = new FSMTransition(State.S1, Event.E1, State.S2, (s1, e, s2) -> { });
-        var transition3 = new FSMTransition(State.S2, Event.E1, State.S2, (s1, e, s2) -> { });
+        var transition1 = new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction);
+        var transition2 = new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction);
+        var transition3 = new FSMTransition(State.S2, Event.E1, State.S2, this::emptyAction);
         var transition4 = new FSMTransition(State.S2, Event.E1, State.S2, null);
 
         assertEquals(transition1.hashCode(), transition2.hashCode());
@@ -43,9 +43,9 @@ class FSMTest {
 
     @Test
     void testEqualsAndHashCodeMethodsForFSMStateActions() {
-        var stateActions1 = new FSMStateActions(State.S1, (s1, e, s2) -> { }, (s1, e, s2) -> { });
-        var stateActions2 = new FSMStateActions(State.S1, (s1, e, s2) -> { }, (s1, e, s2) -> { });
-        var stateActions3 = new FSMStateActions(State.S2, (s1, e, s2) -> { }, (s1, e, s2) -> { });
+        var stateActions1 = new FSMStateActions(State.S1, this::emptyAction, this::emptyAction);
+        var stateActions2 = new FSMStateActions(State.S1, this::emptyAction, this::emptyAction);
+        var stateActions3 = new FSMStateActions(State.S2, this::emptyAction, this::emptyAction);
         var stateActions4 = new FSMStateActions(State.S2, null, null);
 
         assertEquals(stateActions1.hashCode(), stateActions2.hashCode());
