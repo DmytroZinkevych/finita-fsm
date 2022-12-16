@@ -90,6 +90,21 @@ class FSMTest {
         assertEquals(State.S1, fsm.getCurrentState());
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void testTriggeringEventRunsEventAction() {
+        TriConsumer<FSMState, FSMEvent, FSMState> action = mock(TriConsumer.class);
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, action),
+                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction)
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+        fsm.setTransitions(transitions);
+
+        fsm.trigger(Event.E1);
+        verify(action).accept(State.S1, Event.E1, State.S2);
+    }
+
     @Test
     void testTriggeringEventWithActionSetAsNull() {
         var transitions = Set.of(
@@ -122,12 +137,12 @@ class FSMTest {
         fsm.setStateActions(stateActions);
 
         fsm.trigger(Event.E1);
-        verify(onEnterState1).accept(any(), any(), any());
+        verify(onEnterState1).accept(State.S3, Event.E1, State.S1);
 
         assertDoesNotThrow(() -> fsm.trigger(Event.E1));
         var inOrder = Mockito.inOrder(onExitState1, onEnterState2);
-        inOrder.verify(onExitState1).accept(any(), any(), any());
-        inOrder.verify(onEnterState2).accept(any(), any(), any());
+        inOrder.verify(onExitState1).accept(State.S1, Event.E1, State.S2);
+        inOrder.verify(onEnterState2).accept(State.S1, Event.E1, State.S2);
     }
 
     @Test

@@ -32,10 +32,10 @@ class TurnstileFSMTest {
 
         System.out.println("--- Quick pass finish ---\n");
 
-        turnstileFSM.trigger(TurnstileEvent.PUSH);
+        turnstileFSM.trigger(TurnstileEvent.ERROR);
         assertEquals(TurnstileState.LOCKED, turnstileFSM.getCurrentState());
 
-        turnstileFSM.trigger(TurnstileEvent.ERROR);
+        turnstileFSM.trigger(TurnstileEvent.PUSH);
         assertEquals(TurnstileState.LOCKED, turnstileFSM.getCurrentState());
 
         System.out.println("\n========== Turnstile FSM Demo FINISH ==========\n");
