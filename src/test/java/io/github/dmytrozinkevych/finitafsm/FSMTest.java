@@ -94,6 +94,7 @@ class FSMTest {
     @Test
     void testTriggeringEventRunsEventAction() {
         TriConsumer<FSMState, FSMEvent, FSMState> action = mock(TriConsumer.class);
+
         var transitions = Set.of(
                 new FSMTransition(State.S1, Event.E1, State.S2, action),
                 new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction)
@@ -185,6 +186,9 @@ class FSMTest {
     void testBeforeTransitionExceptionHandling() {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+        );
         var fsm = new AbstractFSM(State.S1) {
             @Override
             protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
@@ -199,11 +203,7 @@ class FSMTest {
                 }
             }
         };
-        fsm.setTransitions(
-                Set.of(
-                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
-                )
-        );
+        fsm.setTransitions(transitions);
 
         fsm.trigger(Event.E1);
 
@@ -215,6 +215,12 @@ class FSMTest {
     void testExitStateExceptionHandling() {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+        );
+        var stateActions = Set.of(
+                new FSMStateActions(State.S1, this::emptyAction, this::throwArithmeticException)
+        );
         var fsm = new AbstractFSM(State.S1) {
             @Override
             protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
@@ -224,16 +230,8 @@ class FSMTest {
                 }
             }
         };
-        fsm.setTransitions(
-                Set.of(
-                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
-                )
-        );
-        fsm.setStateActions(
-                Set.of(
-                        new FSMStateActions(State.S1, this::emptyAction, this::throwArithmeticException)
-                )
-        );
+        fsm.setTransitions(transitions);
+        fsm.setStateActions(stateActions);
 
         fsm.trigger(Event.E1);
 
@@ -245,6 +243,9 @@ class FSMTest {
     void testTransitionActionExceptionHandling() {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, this::throwArithmeticException)
+        );
         var fsm = new AbstractFSM(State.S1) {
             @Override
             protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
@@ -254,11 +255,7 @@ class FSMTest {
                 }
             }
         };
-        fsm.setTransitions(
-                Set.of(
-                        new FSMTransition(State.S1, Event.E1, State.S2, this::throwArithmeticException)
-                )
-        );
+        fsm.setTransitions(transitions);
 
         fsm.trigger(Event.E1);
 
@@ -270,6 +267,12 @@ class FSMTest {
     void testEnterStateExceptionHandling() {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+        );
+        var stateActions = Set.of(
+                new FSMStateActions(State.S2, this::throwArithmeticException, this::emptyAction)
+        );
         var fsm = new AbstractFSM(State.S1) {
             @Override
             protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
@@ -279,16 +282,8 @@ class FSMTest {
                 }
             }
         };
-        fsm.setTransitions(
-                Set.of(
-                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
-                )
-        );
-        fsm.setStateActions(
-                Set.of(
-                        new FSMStateActions(State.S2, this::throwArithmeticException, this::emptyAction)
-                )
-        );
+        fsm.setTransitions(transitions);
+        fsm.setStateActions(stateActions);
 
         fsm.trigger(Event.E1);
 
@@ -300,6 +295,9 @@ class FSMTest {
     void testAfterTransitionExceptionHandling() {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+        );
         var fsm = new AbstractFSM(State.S1) {
             @Override
             protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
@@ -314,15 +312,32 @@ class FSMTest {
                 }
             }
         };
-        fsm.setTransitions(
-                Set.of(
-                        new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
-                )
-        );
+        fsm.setTransitions(transitions);
 
         fsm.trigger(Event.E1);
 
         assertTrue(transitionExceptionWasHandled.get());
         assertEquals(State.S1, fsm.getCurrentState());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testGettingActionsForState() {
+        TriConsumer<FSMState, FSMEvent, FSMState> enterStateAction = mock(TriConsumer.class);
+        TriConsumer<FSMState, FSMEvent, FSMState> exitStateAction = mock(TriConsumer.class);
+
+        var stateActions = Set.of(
+                new FSMStateActions(State.S1, enterStateAction, exitStateAction)
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+        fsm.setStateActions(stateActions);
+
+        assertTrue(fsm.getEnterStateAction(State.S1).isPresent());
+        fsm.getEnterStateAction(State.S1).get().accept(null, null, null);
+        verify(enterStateAction).accept(any(), any(), any());
+
+        assertTrue(fsm.getExitStateAction(State.S1).isPresent());
+        fsm.getExitStateAction(State.S1).get().accept(null, null, null);
+        verify(exitStateAction).accept(any(), any(), any());
     }
 }
