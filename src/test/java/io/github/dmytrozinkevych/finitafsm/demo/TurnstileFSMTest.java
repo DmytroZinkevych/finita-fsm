@@ -38,6 +38,9 @@ class TurnstileFSMTest {
         turnstileFSM.trigger(TurnstileEvent.PUSH);
         assertEquals(TurnstileState.LOCKED, turnstileFSM.getCurrentState());
 
+        System.out.println("\n\n--- State diagram: ---\n");
+        System.out.println(turnstileFSM.generatePlantUmlDiagramCode(TurnstileState.LOCKED, TurnstileState.UNLOCKED));
+
         System.out.println("\n========== Turnstile FSM Demo FINISH ==========\n");
     }
 }

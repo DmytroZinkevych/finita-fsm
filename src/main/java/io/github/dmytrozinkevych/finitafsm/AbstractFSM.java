@@ -15,6 +15,21 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractFSM {
 
+    private static final String STATE_DIAGRAM_TEMPLATE =
+            """
+            @startuml
+            !pragma layout smetana
+            hide empty description
+                            
+            [*] --> %s
+            
+            %s
+                            
+            %s --> [*]
+                            
+            @enduml
+            """;
+
     //TODO: ensure proper work in concurrent environment
     private Map<FSMState, Map<FSMEvent, Pair<FSMState, TriConsumer<FSMState, FSMEvent, FSMState>>>> statesWithTransitions;
 
@@ -86,11 +101,15 @@ public abstract class AbstractFSM {
                 .map(Pair::right);
     }
 
-    public FSMState trigger(FSMEvent event) {
+    private void requireHasTransitions() {
         if (statesWithTransitions == null || statesWithTransitions.isEmpty()) {
             throw new FSMHasNoTransitionsSetException();
         }
-        var actionNewStatePair = Optional.ofNullable(statesWithTransitions.get(currentState))
+    }
+
+    public FSMState trigger(FSMEvent event) {
+        requireHasTransitions();
+        var actionNewStatePair = Optional.of(statesWithTransitions.get(currentState))
                 .map(stateTransitions -> stateTransitions.get(event))
                 .orElseThrow(() -> new NoSuchTransitionException(currentState, event));
 
@@ -155,5 +174,24 @@ public abstract class AbstractFSM {
 
     protected void triggerAfterwards(FSMEvent event) {
         nextEvent = event;
+    }
+
+    public String generatePlantUmlDiagramCode(FSMState startStane, FSMState endState) {
+        requireHasTransitions();
+        var transitions = statesWithTransitions.entrySet()
+                .stream()
+                .flatMap(stateWithTransitionsEntry -> stateWithTransitionsEntry.getValue()
+                        .entrySet()
+                        .stream()
+                        .map(eventNewStateEntry -> new FSMTransition(
+                                stateWithTransitionsEntry.getKey(),
+                                eventNewStateEntry.getKey(),
+                                eventNewStateEntry.getValue().left(),
+                                null
+                        ))
+                )
+                .map(transition -> transition.oldState() + " --> " + transition.newState() + " : " + transition.event())
+                .collect(Collectors.joining("\n"));
+        return STATE_DIAGRAM_TEMPLATE.formatted(startStane, transitions, endState);
     }
 }
