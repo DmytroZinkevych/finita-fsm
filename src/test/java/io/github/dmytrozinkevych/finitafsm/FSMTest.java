@@ -8,8 +8,10 @@ import io.github.dmytrozinkevych.finitafsm.utils.TriConsumer;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -339,5 +341,53 @@ class FSMTest {
         assertTrue(fsm.getExitStateAction(State.S1).isPresent());
         fsm.getExitStateAction(State.S1).get().accept(null, null, null);
         verify(exitStateAction).accept(any(), any(), any());
+    }
+
+    @Test
+    void testGeneratingPlantUmlStateDiagramCode() {
+        var transitions = Set.of(
+                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
+                new FSMTransition(State.S2, Event.E1, State.S1, this::emptyAction),
+                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction)
+        );
+        var fsm = new AbstractFSM(State.S1) { };
+        fsm.setTransitions(transitions);
+
+        var diagramCode = fsm.generatePlantUmlDiagramCode(State.S1, State.S2);
+
+        assertTrue(diagramCode.startsWith(
+                """
+                @startuml
+                !pragma layout smetana
+                hide empty description
+                                
+                [*] --> S1
+                """
+        ));
+        assertTrue(diagramCode.endsWith(
+                """
+                S2 --> [*]
+                            
+                @enduml
+                """
+        ));
+        assertTrue(diagramCode.endsWith("\n"));
+
+        var expectedTransitions = Set.of(
+                "S1 --> S2 : E1",
+                "S2 --> S1 : E1",
+                "S2 --> S1 : E2"
+        );
+        var actualTransitions = Arrays.stream(diagramCode.split("\n"))
+                .filter(line -> line.contains(":"))
+                .collect(Collectors.toSet());
+        assertEquals(expectedTransitions, actualTransitions);
+    }
+
+    @Test
+    void testGeneratingDiagramForFSMWithNoTransitionsSetThrowsException() {
+        var fsm = new AbstractFSM(State.S1) { };
+
+        assertThrows(FSMHasNoTransitionsSetException.class, () -> fsm.generatePlantUmlDiagramCode(State.S1, State.S2));
     }
 }
