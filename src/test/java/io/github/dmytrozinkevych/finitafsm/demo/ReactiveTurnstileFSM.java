@@ -26,7 +26,8 @@ public class ReactiveTurnstileFSM extends AbstractReactiveFSM {
                 new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.COIN, TurnstileFSM.TurnstileState.UNLOCKED, this::logTransition),
                 new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.PUSH, TurnstileFSM.TurnstileState.LOCKED, this::logTransition),
 //                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.QUICK_PASS, TurnstileFSM.TurnstileState.UNLOCKED, this::quickPass),
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.ERROR, TurnstileFSM.TurnstileState.UNLOCKED, this::throwException)
+                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.ERROR, TurnstileFSM.TurnstileState.UNLOCKED, this::throwException),
+                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.ERROR, TurnstileFSM.TurnstileState.LOCKED, this::throwException)    // TODO: remove
         );
         setTransitions(transitions);
 

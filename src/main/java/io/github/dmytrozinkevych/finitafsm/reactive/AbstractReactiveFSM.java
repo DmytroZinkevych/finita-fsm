@@ -126,24 +126,11 @@ public abstract class AbstractReactiveFSM {
         var newState = actionNewStatePair.left();
         var transitionAction = actionNewStatePair.right();
 
-        if (transitionAction == null) {
-            return Mono.just(newState);
-        }
-        return transitionAction.accept(oldState, event, newState)
-                .thenReturn(newState)
-                .doOnError(ex -> onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION))
-                .onErrorReturn(oldState);
-
-
-
 
 //        beforeEachTransition(oldState, event, newState)
 //                .doOnError(throwable ->
 //                    onTransitionException(oldState, event, newState, throwable, FSMTransitionStage.BEFORE_TRANSITION)
 //                ).onErrorReturn(oldState)
-
-
-
 
 //        try {
 //            beforeEachTransition(oldState, event, newState);
@@ -161,6 +148,20 @@ public abstract class AbstractReactiveFSM {
 //                return oldState;
 //            }
 //        }
+
+
+        if (transitionAction != null) {
+            return transitionAction.accept(oldState, event, newState)
+                    .doOnNext(ignore -> currentState = newState)
+                    .thenReturn(newState)
+                    .doOnError(ex -> onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION))
+                    .onErrorReturn(oldState);
+        }
+
+        return Mono.just(newState);
+
+
+
 //
 //        if (transitionAction != null) {
 //            try {
