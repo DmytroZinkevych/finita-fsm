@@ -2,6 +2,7 @@ package io.github.dmytrozinkevych.finitafsm.demo;
 
 import io.github.dmytrozinkevych.finitafsm.FSMEvent;
 import io.github.dmytrozinkevych.finitafsm.FSMState;
+import io.github.dmytrozinkevych.finitafsm.FSMTransitionStage;
 import io.github.dmytrozinkevych.finitafsm.reactive.AbstractReactiveFSM;
 import io.github.dmytrozinkevych.finitafsm.reactive.ReactiveFSMTransition;
 import reactor.core.publisher.Mono;
@@ -23,9 +24,9 @@ public class ReactiveTurnstileFSM extends AbstractReactiveFSM {
                 new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.COIN, TurnstileFSM.TurnstileState.UNLOCKED, this::logTransition),
                 new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.PUSH, TurnstileFSM.TurnstileState.LOCKED, this::logTransition),
                 new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.COIN, TurnstileFSM.TurnstileState.UNLOCKED, this::logTransition),
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.PUSH, TurnstileFSM.TurnstileState.LOCKED, this::logTransition)//,
+                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.PUSH, TurnstileFSM.TurnstileState.LOCKED, this::logTransition),
 //                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.QUICK_PASS, TurnstileFSM.TurnstileState.UNLOCKED, this::quickPass),
-//                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.ERROR, TurnstileFSM.TurnstileState.UNLOCKED, this::throwException)
+                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.ERROR, TurnstileFSM.TurnstileState.UNLOCKED, this::throwException)
         );
         setTransitions(transitions);
 
@@ -46,19 +47,19 @@ public class ReactiveTurnstileFSM extends AbstractReactiveFSM {
 //        System.out.printf("After transition from %s (on %s) to %s%n%n", oldState, event, newState);
 //    }
 
-//    @Override
-//    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
-//        System.out.println("** Error happened: running the error handler **");
-//        if (transitionStage == FSMTransitionStage.TRANSITION_ACTION) {
-//            System.out.printf("** Error happened during the transition action execution. Cause: %s **%n", cause.getClass().getSimpleName());
-//            System.out.printf("** Automatically going back to an old state: %s **%n", oldState);
-//            getEnterStateAction(oldState)
-//                    .ifPresent(action -> {
-//                        System.out.println("** Explicitly calling enter state action **");
-//                        action.accept(oldState, null, oldState);
-//                    });
-//        }
-//    }
+    @Override
+    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
+        System.out.println("** Error happened: running the error handler **");
+        if (transitionStage == FSMTransitionStage.TRANSITION_ACTION) {
+            System.out.printf("** Error happened during the transition action execution. Cause: %s **%n", cause.getClass().getSimpleName());
+            System.out.printf("** Automatically going back to an old state: %s **%n", oldState);
+            getEnterStateAction(oldState)
+                    .ifPresent(action -> {
+                        System.out.println("** Explicitly calling enter state action **");
+                        action.accept(oldState, null, oldState);
+                    });
+        }
+    }
 
     // TODO: consider creating reactive action based on a regular one with a special method/constructor
     private Mono<Void> logTransition(FSMState oldState, FSMEvent event, FSMState newState) {
@@ -89,10 +90,12 @@ public class ReactiveTurnstileFSM extends AbstractReactiveFSM {
 //        triggerAfterwards(TurnstileFSM.TurnstileEvent.PUSH);
 //    }
 //
-//    private void throwException(FSMState oldState, FSMEvent event, FSMState newState) {
-//        System.out.printf("* Transition: %s on %s -> %s *%n", oldState, event, newState);
-//        System.out.println("* Error is going to happen *");
-//        var n = 12 / 0;
-//        System.out.println("Result is " + n);
-//    }
+    private Mono<Void> throwException(FSMState oldState, FSMEvent event, FSMState newState) {
+        return Mono.fromRunnable(() -> {
+            System.out.printf("* Transition: %s on %s -> %s *%n", oldState, event, newState);
+            System.out.println("* Error is going to happen *");
+            var n = 12 / 0;
+            System.out.println("Result is " + n);
+        });
+    }
 }

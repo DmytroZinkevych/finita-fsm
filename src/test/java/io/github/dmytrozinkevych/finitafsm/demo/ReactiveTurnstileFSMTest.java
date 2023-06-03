@@ -22,9 +22,9 @@ class ReactiveTurnstileFSMTest {
         Flux.just(
                 TurnstileEvent.PUSH,
                 TurnstileEvent.COIN,
-                TurnstileEvent.COIN//,
+                TurnstileEvent.COIN,
 //                TurnstileEvent.QUICK_PASS,
-//                TurnstileEvent.ERROR,
+                TurnstileEvent.ERROR//,
 //                TurnstileEvent.PUSH
         )
                 .flatMap(reactiveTurnstileFSM::trigger)

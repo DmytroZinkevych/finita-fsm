@@ -2,7 +2,9 @@ package io.github.dmytrozinkevych.finitafsm.reactive;
 
 import io.github.dmytrozinkevych.finitafsm.FSMEvent;
 import io.github.dmytrozinkevych.finitafsm.FSMState;
+import io.github.dmytrozinkevych.finitafsm.FSMTransitionStage;
 import io.github.dmytrozinkevych.finitafsm.exceptions.DuplicateFSMEventException;
+import io.github.dmytrozinkevych.finitafsm.exceptions.FSMException;
 import io.github.dmytrozinkevych.finitafsm.exceptions.FSMHasNoTransitionsSetException;
 import io.github.dmytrozinkevych.finitafsm.exceptions.NoSuchTransitionException;
 import io.github.dmytrozinkevych.finitafsm.reactive.utils.ReactiveTriConsumer;
@@ -85,9 +87,11 @@ public abstract class AbstractReactiveFSM {
 //
 //    protected Mono<Void> afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 //
-//    protected Mono<Void> onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
-//        throw new FSMException(cause);
-//    }
+
+    // TODO: return Mono<Void>?
+    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
+        throw new FSMException(cause);
+    }
 
     private Optional<Pair<ReactiveTriConsumer<FSMState, FSMEvent, FSMState>, ReactiveTriConsumer<FSMState, FSMEvent, FSMState>>> getActionsForState(FSMState state) {
         return Optional.ofNullable(statesEnterExitActions)
@@ -122,9 +126,13 @@ public abstract class AbstractReactiveFSM {
         var newState = actionNewStatePair.left();
         var transitionAction = actionNewStatePair.right();
 
-
+        if (transitionAction == null) {
+            return Mono.just(newState);
+        }
         return transitionAction.accept(oldState, event, newState)
-                .thenReturn(newState);
+                .thenReturn(newState)
+                .doOnError(ex -> onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION))
+                .onErrorReturn(oldState);
 
 
 

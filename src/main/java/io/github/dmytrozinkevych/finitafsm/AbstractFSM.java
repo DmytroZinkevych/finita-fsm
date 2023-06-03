@@ -82,7 +82,7 @@ public abstract class AbstractFSM {
 
     protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
-    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) { //TODO: catch Throwable instead of Exception?
         throw new FSMException(cause);
     }
 
