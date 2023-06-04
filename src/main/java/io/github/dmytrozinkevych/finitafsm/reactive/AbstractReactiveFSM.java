@@ -88,8 +88,7 @@ public abstract class AbstractReactiveFSM {
 //    protected Mono<Void> afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 //
 
-    // TODO: return Mono<Void>?
-    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
+    protected Mono<Void> onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
         throw new FSMException(cause);
     }
 
@@ -114,91 +113,76 @@ public abstract class AbstractReactiveFSM {
         }
     }
 
-    //TODO: return Mono<Void>? or even Mono from `this`?
+    //TODO: return Mono from `this`?
     //TODO: or create a special publisher - single for the whole instance (how to prevent direct calls, outside of the reactive flow)
-    public Mono<FSMState> trigger(FSMEvent event) {
-        requireHasTransitions();
-        var actionNewStatePair = Optional.of(statesWithTransitions.get(currentState))
-                .map(stateTransitions -> stateTransitions.get(event))
-                .orElseThrow(() -> new NoSuchTransitionException(currentState, event));
-
-        var oldState = currentState;
-        var newState = actionNewStatePair.left();
-        var transitionAction = actionNewStatePair.right();
-
-
-//        beforeEachTransition(oldState, event, newState)
-//                .doOnError(throwable ->
-//                    onTransitionException(oldState, event, newState, throwable, FSMTransitionStage.BEFORE_TRANSITION)
-//                ).onErrorReturn(oldState)
-
-//        try {
-//            beforeEachTransition(oldState, event, newState);
-//        } catch (Exception ex) {
-//            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.BEFORE_TRANSITION);
-//            return oldState;
-//        }
-//
-//        var exitStateAction = getExitStateAction(oldState);
-//        if (exitStateAction.isPresent()) {
-//            try {
-//                exitStateAction.get().accept(oldState, event, newState);
-//            } catch (Exception ex) {
-//                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.EXIT_OLD_STATE);
-//                return oldState;
-//            }
-//        }
+    public Mono<Void> trigger(FSMEvent event) {
+        return Mono.fromSupplier(() -> {
+            requireHasTransitions();
+            return Optional.of(statesWithTransitions.get(currentState))
+                    .map(stateTransitions -> stateTransitions.get(event))
+                    .orElseThrow(() -> new NoSuchTransitionException(currentState, event));
+        })
+                .filter(actionNewStatePair -> actionNewStatePair.right() != null)
+                .flatMap(actionNewStatePair -> {
+                    var oldState = currentState;
+                    var newState = actionNewStatePair.left();
+                    var transitionAction = actionNewStatePair.right();
 
 
-        if (transitionAction != null) {
-            return transitionAction.accept(oldState, event, newState)
-                    .doOnNext(ignore -> currentState = newState)
-                    .thenReturn(newState)
-                    .doOnError(ex -> onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION))
-                    .onErrorReturn(oldState);
-        }
+            //        beforeEachTransition(oldState, event, newState)
+            //                .doOnError(throwable ->
+            //                    onTransitionException(oldState, event, newState, throwable, FSMTransitionStage.BEFORE_TRANSITION)
+            //                )
 
-        return Mono.just(newState);
+            //        try {
+            //            beforeEachTransition(oldState, event, newState);
+            //        } catch (Exception ex) {
+            //            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.BEFORE_TRANSITION);
+            //            return;
+            //        }
+            //
+            //        var exitStateAction = getExitStateAction(oldState);
+            //        if (exitStateAction.isPresent()) {
+            //            try {
+            //                exitStateAction.get().accept(oldState, event, newState);
+            //            } catch (Exception ex) {
+            //                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.EXIT_OLD_STATE);
+            //                return;
+            //            }
+            //        }
+
+                    //TODO: idea: assign variables to Monos after action (or Mono.then() is actually better?). But need to mark an error -> use doOnError for that?
 
 
-
-//
-//        if (transitionAction != null) {
-//            try {
-//                transitionAction.accept(oldState, event, newState);
-//                currentState = newState;
-//            } catch (Exception ex) {
-//                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION);
-//                return oldState;
-//            }
-//        }
-//
-//        var enterStateAction = getEnterStateAction(newState);
-//        if (enterStateAction.isPresent()) {
-//            try {
-//                enterStateAction.get().accept(oldState, event, newState);
-//            } catch (Exception ex) {
-//                currentState = oldState;
-//                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.ENTER_NEW_STATE);
-//                return oldState;
-//            }
-//        }
-//
-//        try {
-//            afterEachTransition(oldState, event, newState);
-//        } catch (Exception ex) {
-//            currentState = oldState;
-//            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.AFTER_TRANSITION);
-//            return oldState;
-//        }
-//
-//        if (nextEvent != null) {
-//            var newEvent = nextEvent;
-//            nextEvent = null;
-//            return trigger(newEvent);
-//        }
-//
-//        return newState;
+                    return transitionAction.accept(oldState, event, newState)
+                            .doOnSuccess(ignore -> currentState = newState)
+                            .onErrorResume(ex -> onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION));
+            //
+            //        var enterStateAction = getEnterStateAction(newState);
+            //        if (enterStateAction.isPresent()) {
+            //            try {
+            //                enterStateAction.get().accept(oldState, event, newState);
+            //            } catch (Exception ex) {
+            //                currentState = oldState;
+            //                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.ENTER_NEW_STATE);
+            //                return;
+            //            }
+            //        }
+            //
+            //        try {
+            //            afterEachTransition(oldState, event, newState);
+            //        } catch (Exception ex) {
+            //            currentState = oldState;
+            //            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.AFTER_TRANSITION);
+            //            return;
+            //        }
+            //
+            //        if (nextEvent != null) {
+            //            var newEvent = nextEvent;
+            //            nextEvent = null;
+            //            trigger(newEvent);
+            //        }
+                });
     }
 
 //    protected void triggerAfterwards(FSMEvent event) {

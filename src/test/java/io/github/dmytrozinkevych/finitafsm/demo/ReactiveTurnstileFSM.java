@@ -49,17 +49,19 @@ public class ReactiveTurnstileFSM extends AbstractReactiveFSM {
 //    }
 
     @Override
-    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
-        System.out.println("** Error happened: running the error handler **");
-        if (transitionStage == FSMTransitionStage.TRANSITION_ACTION) {
-            System.out.printf("** Error happened during the transition action execution. Cause: %s **%n", cause.getClass().getSimpleName());
-            System.out.printf("** Automatically going back to an old state: %s **%n", oldState);
-            getEnterStateAction(oldState)
-                    .ifPresent(action -> {
-                        System.out.println("** Explicitly calling enter state action **");
-                        action.accept(oldState, null, oldState);
-                    });
-        }
+    protected Mono<Void> onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
+        return Mono.fromRunnable(() -> {
+            System.out.println("** Error happened: running the error handler **");
+            if (transitionStage == FSMTransitionStage.TRANSITION_ACTION) {
+                System.out.printf("** Error happened during the transition action execution. Cause: %s **%n", cause.getClass().getSimpleName());
+                System.out.printf("** Automatically going back to an old state: %s **%n", oldState);
+                getEnterStateAction(oldState)
+                        .ifPresent(action -> {
+                            System.out.println("** Explicitly calling enter state action **");
+                            action.accept(oldState, null, oldState);
+                        });
+            }
+        });
     }
 
     // TODO: consider creating reactive action based on a regular one with a special method/constructor
