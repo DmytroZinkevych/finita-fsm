@@ -7,4 +7,3 @@ public interface ReactiveTriConsumer<A, B, C> {
 
     Mono<Void> accept(A a, B b, C c);
 }
-
