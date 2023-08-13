@@ -134,14 +134,14 @@ public abstract class AbstractFSM {
             }
         }
 
-        if (transitionAction != null) {
-            try {
+        try {
+            if (transitionAction != null) {
                 transitionAction.accept(oldState, event, newState);
-                currentState = newState;
-            } catch (Exception ex) {
-                onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION);
-                return;
             }
+            currentState = newState;
+        } catch (Exception ex) {
+            onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION);
+            return;
         }
 
         var enterStateAction = getEnterStateAction(newState);
