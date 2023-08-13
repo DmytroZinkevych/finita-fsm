@@ -117,6 +117,7 @@ class FSMTest {
         fsm.setTransitions(transitions);
 
         assertDoesNotThrow(() -> fsm.trigger(Event.E1));
+        assertEquals(State.S2, fsm.getCurrentState());
     }
 
     @SuppressWarnings("unchecked")
