@@ -122,7 +122,6 @@ public abstract class AbstractReactiveFSM {
                     .map(stateTransitions -> stateTransitions.get(event))
                     .orElseThrow(() -> new NoSuchTransitionException(currentState, event));
         })
-                .filter(actionNewStatePair -> actionNewStatePair.right() != null)
                 .flatMap(actionNewStatePair -> {
                     var oldState = currentState;
                     var newState = actionNewStatePair.left();
@@ -153,11 +152,14 @@ public abstract class AbstractReactiveFSM {
 
                     //TODO: idea: assign variables to Monos after action (or Mono.then() is actually better?). But need to mark an error -> use doOnError for that?
 
-
-                    return transitionAction.accept(oldState, event, newState)
-                            .doOnSuccess(ignore -> currentState = newState)
-                            .onErrorResume(ex -> onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION));
-            //
+                    if (transitionAction != null) {
+                        return transitionAction.accept(oldState, event, newState)
+                                .doOnSuccess(ignore -> currentState = newState)
+                                .onErrorResume(ex -> onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION));
+                    } else {
+                        return Mono.fromRunnable(() -> currentState = newState);
+                    }
+                    //
             //        var enterStateAction = getEnterStateAction(newState);
             //        if (enterStateAction.isPresent()) {
             //            try {

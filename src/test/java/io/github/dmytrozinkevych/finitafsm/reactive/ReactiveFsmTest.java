@@ -112,4 +112,16 @@ class ReactiveFsmTest {
         verify(action).accept(State.S1, Event.E1, State.S2);
         assertEquals(State.S2, fsm.getCurrentState());
     }
+
+    @Test
+    void testTriggeringEventWithActionSetAsNull() {
+        var transitions = Set.of(
+                new ReactiveFSMTransition(State.S1, Event.E1, State.S2, null)
+        );
+        var fsm = new AbstractReactiveFSM(State.S1) { };
+        fsm.setTransitions(transitions);
+
+        assertDoesNotThrow(() -> fsm.trigger(Event.E1).block());
+        assertEquals(State.S2, fsm.getCurrentState());
+    }
 }
