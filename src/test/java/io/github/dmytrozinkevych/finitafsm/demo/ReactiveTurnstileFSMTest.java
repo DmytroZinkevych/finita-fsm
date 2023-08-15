@@ -3,8 +3,8 @@ package io.github.dmytrozinkevych.finitafsm.demo;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
-import static io.github.dmytrozinkevych.finitafsm.demo.TurnstileFSM.TurnstileEvent;
-import static io.github.dmytrozinkevych.finitafsm.demo.TurnstileFSM.TurnstileState;
+import static io.github.dmytrozinkevych.finitafsm.demo.ReactiveTurnstileFSM.TurnstileEvent;
+import static io.github.dmytrozinkevych.finitafsm.demo.ReactiveTurnstileFSM.TurnstileState;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //TODO: create a benchmark comparison of reactive and non-reactive FSM
