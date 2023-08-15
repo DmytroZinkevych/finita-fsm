@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 
 import static io.github.dmytrozinkevych.finitafsm.demo.TurnstileFSM.TurnstileEvent;
 import static io.github.dmytrozinkevych.finitafsm.demo.TurnstileFSM.TurnstileState;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //TODO: create a benchmark comparison of reactive and non-reactive FSM
 class ReactiveTurnstileFSMTest {
@@ -12,10 +13,10 @@ class ReactiveTurnstileFSMTest {
     void reactiveTurnstileFSMDemo() {
         //TODO: somehow prevent reusing of the Reactive FSM instance. Maybe return Mono<AbstractReactiveFSM> after each trigger() call?
         var reactiveTurnstileFSM = new ReactiveTurnstileFSM();
-//        assertEquals(TurnstileState.LOCKED, reactiveTurnstileFSM.getCurrentState());
+        assertEquals(TurnstileState.LOCKED, reactiveTurnstileFSM.getCurrentState());
 
         System.out.println("\n========== Reactive Turnstile FSM Demo START ==========\n");
-//        System.out.println("Initial state: " + reactiveTurnstileFSM.getCurrentState() + "\n");
+        System.out.println("Initial state: " + reactiveTurnstileFSM.getCurrentState() + "\n");
         System.out.println("Transitions:\n");
 
         //TODO: use StepVerifier to test if new states after transitions were correct?
@@ -35,6 +36,5 @@ class ReactiveTurnstileFSMTest {
                     System.out.println("\n========== Reactive Turnstile FSM Demo FINISH ==========\n");
                 })
                 .blockLast();
-        // TODO: add unit tests
     }
 }

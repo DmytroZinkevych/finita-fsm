@@ -4,6 +4,7 @@ import io.github.dmytrozinkevych.finitafsm.FSMEvent;
 import io.github.dmytrozinkevych.finitafsm.FSMState;
 import io.github.dmytrozinkevych.finitafsm.FSMTransitionStage;
 import io.github.dmytrozinkevych.finitafsm.reactive.AbstractReactiveFSM;
+import io.github.dmytrozinkevych.finitafsm.reactive.ReactiveFSMStateActions;
 import io.github.dmytrozinkevych.finitafsm.reactive.ReactiveFSMTransition;
 import reactor.core.publisher.Mono;
 
@@ -19,23 +20,23 @@ public class ReactiveTurnstileFSM extends AbstractReactiveFSM {
     }
 
     public ReactiveTurnstileFSM() {
-        super(TurnstileFSM.TurnstileState.LOCKED);
+        super(TurnstileState.LOCKED);
         final var transitions = Set.of(
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.COIN, TurnstileFSM.TurnstileState.UNLOCKED, this::logTransition),
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.PUSH, TurnstileFSM.TurnstileState.LOCKED, this::logTransition),
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.COIN, TurnstileFSM.TurnstileState.UNLOCKED, this::logTransition),
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.PUSH, TurnstileFSM.TurnstileState.LOCKED, this::logTransition),
-//                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.QUICK_PASS, TurnstileFSM.TurnstileState.UNLOCKED, this::quickPass),
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.LOCKED, TurnstileFSM.TurnstileEvent.ERROR, TurnstileFSM.TurnstileState.UNLOCKED, this::throwException),
-                new ReactiveFSMTransition(TurnstileFSM.TurnstileState.UNLOCKED, TurnstileFSM.TurnstileEvent.ERROR, TurnstileFSM.TurnstileState.LOCKED, this::throwException)    // TODO: remove
+                new ReactiveFSMTransition(TurnstileState.LOCKED, TurnstileEvent.COIN, TurnstileState.UNLOCKED, this::logTransition),
+                new ReactiveFSMTransition(TurnstileState.LOCKED, TurnstileEvent.PUSH, TurnstileState.LOCKED, this::logTransition),
+                new ReactiveFSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.COIN, TurnstileState.UNLOCKED, this::logTransition),
+                new ReactiveFSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.PUSH, TurnstileState.LOCKED, this::logTransition),
+//                new ReactiveFSMTransition(TurnstileState.LOCKED, TurnstileEvent.QUICK_PASS, TurnstileState.UNLOCKED, this::quickPass),
+                new ReactiveFSMTransition(TurnstileState.LOCKED, TurnstileEvent.ERROR, TurnstileState.UNLOCKED, this::throwException),
+                new ReactiveFSMTransition(TurnstileState.UNLOCKED, TurnstileEvent.ERROR, TurnstileState.LOCKED, this::throwException)    // TODO: remove
         );
         setTransitions(transitions);
 
-//        final var stateActions = Set.of(
-//                new FSMStateActions(TurnstileFSM.TurnstileState.LOCKED, this::logEnterState, this::logExitState),
-//                new FSMStateActions(TurnstileFSM.TurnstileState.UNLOCKED, this::logEnterState, this::logExitState)
-//        );
-//        setStateActions(stateActions);
+        final var stateActions = Set.of(
+                new ReactiveFSMStateActions(TurnstileState.LOCKED, this::logEnterState, this::logExitState),
+                new ReactiveFSMStateActions(TurnstileState.UNLOCKED, this::logEnterState, this::logExitState)
+        );
+        setStateActions(stateActions);
     }
 
 //    @Override
@@ -79,18 +80,18 @@ public class ReactiveTurnstileFSM extends AbstractReactiveFSM {
 //        return Mono.empty();
     }
 
-//    private void logEnterState(FSMState oldState, FSMEvent event, FSMState newState) {
-//        System.out.printf(" Entering the state: %s%n", newState);
-//    }
-//
-//    private void logExitState(FSMState oldState, FSMEvent event, FSMState newState) {
-//        System.out.printf(" Exiting from the state: %s%n", oldState);
-//    }
+    private Mono<Void> logEnterState(FSMState oldState, FSMEvent event, FSMState newState) {
+        return Mono.fromRunnable(() -> System.out.printf(" Entering the state: %s%n", newState));
+    }
+
+    private Mono<Void> logExitState(FSMState oldState, FSMEvent event, FSMState newState) {
+        return Mono.fromRunnable(() -> System.out.printf(" Exiting from the state: %s%n", oldState));
+    }
 //
 //    private void quickPass(FSMState oldState, FSMEvent event, FSMState newState) {
 //        System.out.printf("~ Transition: %s on %s -> %s ~%n", oldState, event, newState);
 //        System.out.println("~ Quick pass triggered ~");
-//        triggerAfterwards(TurnstileFSM.TurnstileEvent.PUSH);
+//        triggerAfterwards(TurnstileEvent.PUSH);
 //    }
 //
     private Mono<Void> throwException(FSMState oldState, FSMEvent event, FSMState newState) {
