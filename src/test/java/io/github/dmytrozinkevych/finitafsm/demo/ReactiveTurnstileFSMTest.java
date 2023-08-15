@@ -24,8 +24,8 @@ class ReactiveTurnstileFSMTest {
                 TurnstileEvent.COIN,
                 TurnstileEvent.COIN,
 //                TurnstileEvent.QUICK_PASS,
-                TurnstileEvent.ERROR//,
-//                TurnstileEvent.PUSH
+                TurnstileEvent.ERROR,
+                TurnstileEvent.PUSH
         )
                 .flatMap(reactiveTurnstileFSM::trigger)
                 .doOnComplete(() -> {

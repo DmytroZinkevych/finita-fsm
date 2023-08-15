@@ -88,8 +88,8 @@ public abstract class AbstractReactiveFSM {
 //    protected Mono<Void> afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 //
 
-    protected Mono<Void> onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) {
-        throw new FSMException(cause);
+    protected Mono<Void> onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Throwable cause, FSMTransitionStage transitionStage) { //TODO: AbstractFSM has Exception, not Throwable
+        throw new FSMException(cause);  //TODO: Maybe better to use `Mono.error(new FSMException(cause))`?
     }
 
     private Optional<Pair<ReactiveTriConsumer<FSMState, FSMEvent, FSMState>, ReactiveTriConsumer<FSMState, FSMEvent, FSMState>>> getActionsForState(FSMState state) {
