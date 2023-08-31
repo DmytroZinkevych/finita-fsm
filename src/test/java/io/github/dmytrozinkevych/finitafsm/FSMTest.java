@@ -15,10 +15,35 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class FSMTest {
+
+    private static class TestFsm extends AbstractFSM {
+        TestFsm() {
+            super(State.S1);
+            final var transitions = Set.of(
+                    new FSMTransition(State.S1, Event.E1, State.S2, this::transitionAction)
+            );
+            setTransitions(transitions);
+
+            var stateActions = Set.of(
+                    new FSMStateActions(State.S1, this::onEnterState1, this::onExitState1),
+                    new FSMStateActions(State.S2, this::onEnterState2, this::onExitState2)
+            );
+            setStateActions(stateActions);
+        }
+
+        void transitionAction(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onEnterState1(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onExitState1(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onEnterState2(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onExitState2(FSMState oldState, FSMEvent event, FSMState newState) { }
+    }
 
     private void emptyAction(FSMState oldState, FSMEvent event, FSMState newState) { }
 
@@ -321,6 +346,22 @@ class FSMTest {
 
         assertTrue(transitionExceptionWasHandled.get());
         assertEquals(State.S1, fsm.getCurrentState());
+    }
+
+    @Test
+    void testOrderOfRunningOfAllActions() {
+        var fsm = spy(TestFsm.class);
+        fsm.trigger(Event.E1);
+
+        var inOrder = Mockito.inOrder(fsm);
+        inOrder.verify(fsm).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onExitState1(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).transitionAction(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onEnterState2(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).afterEachTransition(State.S1, Event.E1, State.S2);
+
+        verify(fsm, times(0)).onEnterState1(any(), any(), any());
+        verify(fsm, times(0)).onExitState2(any(), any(), any());
     }
 
     @SuppressWarnings("unchecked")
