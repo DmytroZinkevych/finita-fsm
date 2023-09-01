@@ -19,8 +19,8 @@ import static org.mockito.Mockito.*;
 
 class FSMTest {
 
-    private static class TestFsm extends AbstractFSM {
-        TestFsm() {
+    private static class TestOrderOfActionsFsm extends AbstractFSM {
+        TestOrderOfActionsFsm() {
             super(State.S1);
             final var transitions = Set.of(
                     new FSMTransition(State.S1, Event.E1, State.S2, this::transitionAction)
@@ -381,18 +381,18 @@ class FSMTest {
 
     @Test
     void testOrderOfRunningOfAllActions() {
-        var fsm = spy(TestFsm.class);
+        var fsm = spy(TestOrderOfActionsFsm.class);
         fsm.trigger(Event.E1);
 
         var inOrder = Mockito.inOrder(fsm);
-        inOrder.verify(fsm).beforeEachTransition(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).onExitState1(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).transitionAction(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).onEnterState2(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).afterEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).transitionAction(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onEnterState2(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).afterEachTransition(State.S1, Event.E1, State.S2);
 
-        verify(fsm, times(0)).onEnterState1(any(), any(), any());
-        verify(fsm, times(0)).onExitState2(any(), any(), any());
+        verify(fsm, never()).onEnterState1(any(), any(), any());
+        verify(fsm, never()).onExitState2(any(), any(), any());
     }
 
     @Test
