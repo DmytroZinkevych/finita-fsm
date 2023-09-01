@@ -82,7 +82,7 @@ public abstract class AbstractFSM {
 
     protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) { }
 
-    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
+    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) { //TODO: catch Throwable instead of Exception?
         throw new FSMException(cause);
     }
 
@@ -107,7 +107,7 @@ public abstract class AbstractFSM {
         }
     }
 
-    public FSMState trigger(FSMEvent event) {
+    public void trigger(FSMEvent event) {
         requireHasTransitions();
         var actionNewStatePair = Optional.of(statesWithTransitions.get(currentState))
                 .map(stateTransitions -> stateTransitions.get(event))
@@ -121,7 +121,7 @@ public abstract class AbstractFSM {
             beforeEachTransition(oldState, event, newState);
         } catch (Exception ex) {
             onTransitionException(oldState, event, newState, ex, FSMTransitionStage.BEFORE_TRANSITION);
-            return oldState;
+            return;
         }
 
         var exitStateAction = getExitStateAction(oldState);
@@ -130,7 +130,7 @@ public abstract class AbstractFSM {
                 exitStateAction.get().accept(oldState, event, newState);
             } catch (Exception ex) {
                 onTransitionException(oldState, event, newState, ex, FSMTransitionStage.EXIT_OLD_STATE);
-                return oldState;
+                return;
             }
         }
 
@@ -141,7 +141,7 @@ public abstract class AbstractFSM {
             currentState = newState;
         } catch (Exception ex) {
             onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION);
-            return oldState;
+            return;
         }
 
         var enterStateAction = getEnterStateAction(newState);
@@ -151,7 +151,7 @@ public abstract class AbstractFSM {
             } catch (Exception ex) {
                 currentState = oldState;
                 onTransitionException(oldState, event, newState, ex, FSMTransitionStage.ENTER_NEW_STATE);
-                return oldState;
+                return;
             }
         }
 
@@ -160,16 +160,14 @@ public abstract class AbstractFSM {
         } catch (Exception ex) {
             currentState = oldState;
             onTransitionException(oldState, event, newState, ex, FSMTransitionStage.AFTER_TRANSITION);
-            return oldState;
+            return;
         }
 
         if (nextEvent != null) {
             var newEvent = nextEvent;
             nextEvent = null;
-            return trigger(newEvent);
+            trigger(newEvent);
         }
-
-        return newState;
     }
 
     protected void triggerAfterwards(FSMEvent event) {

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.dmytrozinkevych.finita-fsm'
-version '0.3.3-SNAPSHOT'
+version '0.4.0-SNAPSHOT'
 
 apply plugin: 'java'
 java {
@@ -17,6 +17,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.projectreactor:reactor-core:3.5.9'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

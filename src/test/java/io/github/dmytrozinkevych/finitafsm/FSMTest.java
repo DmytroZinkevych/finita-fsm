@@ -162,6 +162,7 @@ class FSMTest {
 
         fsm.trigger(Event.E1);
         verify(action).accept(State.S1, Event.E1, State.S2);
+        assertEquals(State.S2, fsm.getCurrentState());
     }
 
     @Test
