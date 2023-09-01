@@ -200,6 +200,16 @@ class ReactiveFsmTest {
 //    void testAfterTransitionExceptionHandling() {
 //
 //    }
+//
+//    @Test
+//    void testOrderOfRunningOfAllActions() {
+//
+//    }
+//
+//    @Test
+//    void testTriggerAfterwards() {
+//
+//    }
 
     @SuppressWarnings("unchecked")
     @Test
