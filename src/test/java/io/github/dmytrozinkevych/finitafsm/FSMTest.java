@@ -19,8 +19,8 @@ import static org.mockito.Mockito.*;
 
 class FSMTest {
 
-    private static class TestFsm extends AbstractFSM {
-        TestFsm() {
+    private static class TestOrderOfActionsFsm extends AbstractFSM {
+        TestOrderOfActionsFsm() {
             super(State.S1);
             final var transitions = Set.of(
                     new FSMTransition(State.S1, Event.E1, State.S2, this::transitionAction)
@@ -35,6 +35,37 @@ class FSMTest {
         }
 
         void transitionAction(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onEnterState1(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onExitState1(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onEnterState2(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onExitState2(FSMState oldState, FSMEvent event, FSMState newState) { }
+    }
+
+    private static class TestTriggerAfterwardsFsm extends AbstractFSM {
+        TestTriggerAfterwardsFsm() {
+            super(State.S1);
+            final var transitions = Set.of(
+                    new FSMTransition(State.S1, Event.E1, State.S2, this::transitionActionWithTriggerAfterwards),
+                    new FSMTransition(State.S2, Event.E2, State.S1, this::regularTransitionAction)
+            );
+            setTransitions(transitions);
+
+            var stateActions = Set.of(
+                    new FSMStateActions(State.S1, this::onEnterState1, this::onExitState1),
+                    new FSMStateActions(State.S2, this::onEnterState2, this::onExitState2)
+            );
+            setStateActions(stateActions);
+        }
+
+        void transitionActionWithTriggerAfterwards(FSMState oldState, FSMEvent event, FSMState newState) {
+            triggerAfterwards(Event.E2);
+        }
+
+        void regularTransitionAction(FSMState oldState, FSMEvent event, FSMState newState) { }
 
         void onEnterState1(FSMState oldState, FSMEvent event, FSMState newState) { }
 
@@ -350,18 +381,40 @@ class FSMTest {
 
     @Test
     void testOrderOfRunningOfAllActions() {
-        var fsm = spy(TestFsm.class);
+        var fsm = spy(TestOrderOfActionsFsm.class);
         fsm.trigger(Event.E1);
 
         var inOrder = Mockito.inOrder(fsm);
-        inOrder.verify(fsm).beforeEachTransition(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).onExitState1(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).transitionAction(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).onEnterState2(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm).afterEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).transitionAction(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onEnterState2(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).afterEachTransition(State.S1, Event.E1, State.S2);
 
-        verify(fsm, times(0)).onEnterState1(any(), any(), any());
-        verify(fsm, times(0)).onExitState2(any(), any(), any());
+        verify(fsm, never()).onEnterState1(any(), any(), any());
+        verify(fsm, never()).onExitState2(any(), any(), any());
+    }
+
+    @Test
+    void testTriggerAfterwards() {
+        var fsm = spy(TestTriggerAfterwardsFsm.class);
+        fsm.trigger(Event.E1);
+
+        var inOrder = Mockito.inOrder(fsm);
+        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).transitionActionWithTriggerAfterwards(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).triggerAfterwards(Event.E2);
+        inOrder.verify(fsm, times(1)).onEnterState2(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).afterEachTransition(State.S1, Event.E1, State.S2);
+
+        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S2, Event.E2, State.S1);
+        inOrder.verify(fsm, times(1)).onExitState2(State.S2, Event.E2, State.S1);
+        inOrder.verify(fsm, times(1)).regularTransitionAction(State.S2, Event.E2, State.S1);
+        inOrder.verify(fsm, times(1)).onEnterState1(State.S2, Event.E2, State.S1);
+        inOrder.verify(fsm, times(1)).afterEachTransition(State.S2, Event.E2, State.S1);
+
+        verify(fsm, never()).triggerAfterwards(Event.E1);
     }
 
     @SuppressWarnings("unchecked")
