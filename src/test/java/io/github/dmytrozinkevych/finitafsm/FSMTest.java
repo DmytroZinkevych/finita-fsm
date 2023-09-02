@@ -76,11 +76,45 @@ class FSMTest {
         void onExitState2(FSMState oldState, FSMEvent event, FSMState newState) { }
     }
 
-    private void emptyAction(FSMState oldState, FSMEvent event, FSMState newState) { }
+    private static class TestExceptionFsm extends AbstractFSM {
+        TestExceptionFsm() {
+            super(State.S1);
+            final var transitions = Set.of(
+                    new FSMTransition(State.S1, Event.E1, State.S2, this::transitionAction)
+            );
+            setTransitions(transitions);
 
-    private void throwArithmeticException(FSMState oldState, FSMEvent event, FSMState newState) {
+            var stateActions = Set.of(
+                    new FSMStateActions(State.S1, this::onEnterState1, this::onExitState1),
+                    new FSMStateActions(State.S2, this::onEnterState2, this::onExitState2)
+            );
+            setStateActions(stateActions);
+        }
+
+        @Override
+        protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
+            throwArithmeticException(oldState, event, newState);
+        }
+
+        @Override
+        protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) { }
+
+        void transitionAction(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onEnterState1(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onExitState1(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onEnterState2(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+        void onExitState2(FSMState oldState, FSMEvent event, FSMState newState) { }
+    }
+
+    private static void throwArithmeticException(FSMState oldState, FSMEvent event, FSMState newState) {
         var n = 12 / 0;
     }
+
+    private void emptyAction(FSMState oldState, FSMEvent event, FSMState newState) { }
 
     @Test
     void testEqualsAndHashCodeMethodsForFSMTransition() {
@@ -225,7 +259,7 @@ class FSMTest {
     @Test
     void testTransitionExceptionWhenOnTransitionExceptionIsNotOverridden() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::throwArithmeticException)
+                new FSMTransition(State.S1, Event.E1, State.S2, FSMTest::throwArithmeticException)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);
@@ -278,7 +312,7 @@ class FSMTest {
                 new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
         );
         var stateActions = Set.of(
-                new FSMStateActions(State.S1, this::emptyAction, this::throwArithmeticException)
+                new FSMStateActions(State.S1, this::emptyAction, FSMTest::throwArithmeticException)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -303,7 +337,7 @@ class FSMTest {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::throwArithmeticException)
+                new FSMTransition(State.S1, Event.E1, State.S2, FSMTest::throwArithmeticException)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -330,7 +364,7 @@ class FSMTest {
                 new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
         );
         var stateActions = Set.of(
-                new FSMStateActions(State.S2, this::throwArithmeticException, this::emptyAction)
+                new FSMStateActions(State.S2, FSMTest::throwArithmeticException, this::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -365,10 +399,9 @@ class FSMTest {
 
             @Override
             protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
-                if (transitionStage == FSMTransitionStage.AFTER_TRANSITION) {
-                    transitionExceptionWasHandled.set(true);
-                    assertEquals(cause.getClass(), ArithmeticException.class);
-                }
+                transitionExceptionWasHandled.set(true);
+                assertEquals(FSMTransitionStage.AFTER_TRANSITION, transitionStage);
+                assertEquals(ArithmeticException.class, cause.getClass());
             }
         };
         fsm.setTransitions(transitions);
@@ -385,6 +418,7 @@ class FSMTest {
         fsm.trigger(Event.E1);
 
         var inOrder = Mockito.inOrder(fsm);
+
         inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).transitionAction(State.S1, Event.E1, State.S2);
@@ -401,6 +435,7 @@ class FSMTest {
         fsm.trigger(Event.E1);
 
         var inOrder = Mockito.inOrder(fsm);
+
         inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).transitionActionWithTriggerAfterwards(State.S1, Event.E1, State.S2);
@@ -415,6 +450,19 @@ class FSMTest {
         inOrder.verify(fsm, times(1)).afterEachTransition(State.S2, Event.E2, State.S1);
 
         verify(fsm, never()).triggerAfterwards(Event.E1);
+    }
+
+    @Test
+    void testNotRunningAnyOtherActionsAfterExceptionOccurred() {
+        var fsm = spy(TestExceptionFsm.class);
+        fsm.trigger(Event.E1);
+
+        var inOrder = Mockito.inOrder(fsm);
+
+        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
+
+        inOrder.verifyNoMoreInteractions();
     }
 
     @SuppressWarnings("unchecked")
