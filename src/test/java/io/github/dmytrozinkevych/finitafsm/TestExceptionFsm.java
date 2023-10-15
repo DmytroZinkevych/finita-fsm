@@ -24,21 +24,15 @@ public class TestExceptionFsm extends AbstractFSM {
     }
 
     @Override
-    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
-    }
+    protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) { }
 
-    void transitionAction(FSMState oldState, FSMEvent event, FSMState newState) {
-    }
+    void transitionAction(FSMState oldState, FSMEvent event, FSMState newState) { }
 
-    void onEnterState1(FSMState oldState, FSMEvent event, FSMState newState) {
-    }
+    void onEnterState1(FSMState oldState, FSMEvent event, FSMState newState) { }
 
-    void onExitState1(FSMState oldState, FSMEvent event, FSMState newState) {
-    }
+    void onExitState1(FSMState oldState, FSMEvent event, FSMState newState) { }
 
-    void onEnterState2(FSMState oldState, FSMEvent event, FSMState newState) {
-    }
+    void onEnterState2(FSMState oldState, FSMEvent event, FSMState newState) { }
 
-    void onExitState2(FSMState oldState, FSMEvent event, FSMState newState) {
-    }
+    void onExitState2(FSMState oldState, FSMEvent event, FSMState newState) { }
 }

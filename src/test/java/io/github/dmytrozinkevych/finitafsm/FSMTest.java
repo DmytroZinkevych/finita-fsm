@@ -352,13 +352,17 @@ class FSMTest {
         inOrder.verify(fsm, times(1)).onEnterState2(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).afterEachTransition(State.S1, Event.E1, State.S2);
 
-        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S2, Event.E2, State.S1);
-        inOrder.verify(fsm, times(1)).onExitState2(State.S2, Event.E2, State.S1);
-        inOrder.verify(fsm, times(1)).regularTransitionAction(State.S2, Event.E2, State.S1);
-        inOrder.verify(fsm, times(1)).onEnterState1(State.S2, Event.E2, State.S1);
-        inOrder.verify(fsm, times(1)).afterEachTransition(State.S2, Event.E2, State.S1);
+        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm, times(1)).onExitState2(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm, times(1)).regularTransitionAction(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm, times(1)).onEnterState3(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm, times(1)).afterEachTransition(State.S2, Event.E2, State.S3);
+
+        inOrder.verifyNoMoreInteractions();
 
         verify(fsm, never()).triggerAfterwards(Event.E1);
+
+        assertEquals(State.S3, fsm.getCurrentState());
     }
 
     @Test
@@ -372,6 +376,8 @@ class FSMTest {
         inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
 
         inOrder.verifyNoMoreInteractions();
+
+        assertEquals(State.S1, fsm.getCurrentState());
     }
 
     @Test

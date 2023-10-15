@@ -8,13 +8,14 @@ public class TestTriggerAfterwardsFsm extends AbstractFSM {
         super(State.S1);
         final var transitions = Set.of(
                 new FSMTransition(State.S1, Event.E1, State.S2, this::transitionActionWithTriggerAfterwards),
-                new FSMTransition(State.S2, Event.E2, State.S1, this::regularTransitionAction)
+                new FSMTransition(State.S2, Event.E2, State.S3, this::regularTransitionAction)
         );
         setTransitions(transitions);
 
         var stateActions = Set.of(
                 new FSMStateActions(State.S1, this::onEnterState1, this::onExitState1),
-                new FSMStateActions(State.S2, this::onEnterState2, this::onExitState2)
+                new FSMStateActions(State.S2, this::onEnterState2, this::onExitState2),
+                new FSMStateActions(State.S3, this::onEnterState3, this::onExitState3)
         );
         setStateActions(stateActions);
     }
@@ -32,4 +33,8 @@ public class TestTriggerAfterwardsFsm extends AbstractFSM {
     void onEnterState2(FSMState oldState, FSMEvent event, FSMState newState) { }
 
     void onExitState2(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+    void onEnterState3(FSMState oldState, FSMEvent event, FSMState newState) { }
+
+    void onExitState3(FSMState oldState, FSMEvent event, FSMState newState) { }
 }
