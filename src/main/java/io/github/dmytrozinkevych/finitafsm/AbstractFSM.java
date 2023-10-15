@@ -86,6 +86,11 @@ public abstract class AbstractFSM {
         throw new FSMException(cause);
     }
 
+    private void rollbackToThePreviousState(FSMState oldState) {
+        currentState = oldState;
+        nextEvent = null;
+    }
+
     private Optional<Pair<TriConsumer<FSMState, FSMEvent, FSMState>, TriConsumer<FSMState, FSMEvent, FSMState>>> getActionsForState(FSMState state) {
         return Optional.ofNullable(statesEnterExitActions)
                 .map(statesActionsMap -> statesActionsMap.get(state));
@@ -120,6 +125,7 @@ public abstract class AbstractFSM {
         try {
             beforeEachTransition(oldState, event, newState);
         } catch (Exception ex) {
+            rollbackToThePreviousState(oldState);
             onTransitionException(oldState, event, newState, ex, FSMTransitionStage.BEFORE_TRANSITION);
             return oldState;
         }
@@ -129,6 +135,7 @@ public abstract class AbstractFSM {
             try {
                 exitStateAction.get().accept(oldState, event, newState);
             } catch (Exception ex) {
+                rollbackToThePreviousState(oldState);
                 onTransitionException(oldState, event, newState, ex, FSMTransitionStage.EXIT_OLD_STATE);
                 return oldState;
             }
@@ -140,6 +147,7 @@ public abstract class AbstractFSM {
             }
             currentState = newState;
         } catch (Exception ex) {
+            rollbackToThePreviousState(oldState);
             onTransitionException(oldState, event, newState, ex, FSMTransitionStage.TRANSITION_ACTION);
             return oldState;
         }
@@ -149,7 +157,7 @@ public abstract class AbstractFSM {
             try {
                 enterStateAction.get().accept(oldState, event, newState);
             } catch (Exception ex) {
-                currentState = oldState;
+                rollbackToThePreviousState(oldState);
                 onTransitionException(oldState, event, newState, ex, FSMTransitionStage.ENTER_NEW_STATE);
                 return oldState;
             }
@@ -158,7 +166,7 @@ public abstract class AbstractFSM {
         try {
             afterEachTransition(oldState, event, newState);
         } catch (Exception ex) {
-            currentState = oldState;
+            rollbackToThePreviousState(oldState);
             onTransitionException(oldState, event, newState, ex, FSMTransitionStage.AFTER_TRANSITION);
             return oldState;
         }

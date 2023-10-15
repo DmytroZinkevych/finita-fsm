@@ -374,6 +374,24 @@ class FSMTest {
         inOrder.verifyNoMoreInteractions();
     }
 
+    @Test
+    void testResettingNextEventAfterExceptionOccurred() {
+        var fsm = spy(TestExceptionBeforeTriggeringNextEventFSM.class);
+
+        fsm.trigger(Event.E1);
+        assertEquals(State.S1, fsm.getCurrentState());
+
+        var inOrder = Mockito.inOrder(fsm);
+
+        inOrder.verify(fsm, times(1)).actionWithTrigger(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.TRANSITION_ACTION));
+
+        fsm.trigger(Event.E3);
+        inOrder.verify(fsm, times(1)).regularAction(State.S1, Event.E3, State.S2);
+
+        assertEquals(State.S2, fsm.getCurrentState());
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     void testGettingActionsForState() {
