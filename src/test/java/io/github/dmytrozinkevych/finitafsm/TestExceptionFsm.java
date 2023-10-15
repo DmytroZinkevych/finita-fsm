@@ -2,6 +2,8 @@ package io.github.dmytrozinkevych.finitafsm;
 
 import java.util.Set;
 
+import static io.github.dmytrozinkevych.finitafsm.TestUtils.throwArithmeticException;
+
 public class TestExceptionFsm extends AbstractFSM {
 
     TestExceptionFsm() {
@@ -20,7 +22,7 @@ public class TestExceptionFsm extends AbstractFSM {
 
     @Override
     protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
-        FSMTest.throwArithmeticException(oldState, event, newState);
+        throwArithmeticException(oldState, event, newState);
     }
 
     @Override

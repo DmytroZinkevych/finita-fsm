@@ -13,23 +13,18 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static io.github.dmytrozinkevych.finitafsm.TestUtils.throwArithmeticException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class FSMTest {
 
-    public static void throwArithmeticException(FSMState oldState, FSMEvent event, FSMState newState) {
-        var n = 12 / 0;
-    }
-
-    private void emptyAction(FSMState oldState, FSMEvent event, FSMState newState) { }
-
     @Test
     void testEqualsAndHashCodeMethodsForFSMTransition() {
-        var transition1 = new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction);
-        var transition2 = new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction);
-        var transition3 = new FSMTransition(State.S2, Event.E1, State.S2, this::emptyAction);
+        var transition1 = new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction);
+        var transition2 = new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction);
+        var transition3 = new FSMTransition(State.S2, Event.E1, State.S2, TestUtils::emptyAction);
         var transition4 = new FSMTransition(State.S2, Event.E1, State.S2, null);
 
         assertEquals(transition1.hashCode(), transition2.hashCode());
@@ -44,9 +39,9 @@ class FSMTest {
 
     @Test
     void testEqualsAndHashCodeMethodsForFSMStateActions() {
-        var stateActions1 = new FSMStateActions(State.S1, this::emptyAction, this::emptyAction);
-        var stateActions2 = new FSMStateActions(State.S1, this::emptyAction, this::emptyAction);
-        var stateActions3 = new FSMStateActions(State.S2, this::emptyAction, this::emptyAction);
+        var stateActions1 = new FSMStateActions(State.S1, TestUtils::emptyAction, TestUtils::emptyAction);
+        var stateActions2 = new FSMStateActions(State.S1, TestUtils::emptyAction, TestUtils::emptyAction);
+        var stateActions3 = new FSMStateActions(State.S2, TestUtils::emptyAction, TestUtils::emptyAction);
         var stateActions4 = new FSMStateActions(State.S2, null, null);
 
         assertEquals(stateActions1.hashCode(), stateActions2.hashCode());
@@ -69,9 +64,9 @@ class FSMTest {
     @Test
     void testDuplicatingOfFSMEventThrowsException() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
-                new FSMTransition(State.S1, Event.E2, State.S2, this::emptyAction),
-                new FSMTransition(State.S1, Event.E2, State.S1, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction),
+                new FSMTransition(State.S1, Event.E2, State.S2, TestUtils::emptyAction),
+                new FSMTransition(State.S1, Event.E2, State.S1, TestUtils::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) { };
 
@@ -81,8 +76,8 @@ class FSMTest {
     @Test
     void testTriggeringEventWhichIsNotSetForCurrentStateThrowsException() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
-                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction),
+                new FSMTransition(State.S2, Event.E2, State.S1, TestUtils::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);
@@ -98,7 +93,7 @@ class FSMTest {
 
         var transitions = Set.of(
                 new FSMTransition(State.S1, Event.E1, State.S2, action),
-                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction)
+                new FSMTransition(State.S2, Event.E2, State.S1, TestUtils::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);
@@ -127,9 +122,9 @@ class FSMTest {
         TriConsumer<FSMState, FSMEvent, FSMState> onExitState1 = mock(TriConsumer.class);
 
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
-                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction),
-                new FSMTransition(State.S3, Event.E1, State.S1, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction),
+                new FSMTransition(State.S2, Event.E2, State.S1, TestUtils::emptyAction),
+                new FSMTransition(State.S3, Event.E1, State.S1, TestUtils::emptyAction)
         );
         var stateActions = Set.of(
                 new FSMStateActions(State.S1, onEnterState1, onExitState1),
@@ -151,8 +146,8 @@ class FSMTest {
     @Test
     void testIfActionsOnEnterAndExitStateAreNullNoExceptionIsThrown() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
-                new FSMTransition(State.S2, Event.E2, State.S3, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction),
+                new FSMTransition(State.S2, Event.E2, State.S3, TestUtils::emptyAction)
         );
         var stateActions = Set.of(
                 new FSMStateActions(State.S1, null, null),
@@ -168,7 +163,7 @@ class FSMTest {
     @Test
     void testTransitionExceptionWhenOnTransitionExceptionIsNotOverridden() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, FSMTest::throwArithmeticException)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::throwArithmeticException)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);
@@ -189,7 +184,7 @@ class FSMTest {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -218,10 +213,10 @@ class FSMTest {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction)
         );
         var stateActions = Set.of(
-                new FSMStateActions(State.S1, this::emptyAction, FSMTest::throwArithmeticException)
+                new FSMStateActions(State.S1, TestUtils::emptyAction, TestUtils::throwArithmeticException)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -246,7 +241,7 @@ class FSMTest {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, FSMTest::throwArithmeticException)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::throwArithmeticException)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -270,10 +265,10 @@ class FSMTest {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction)
         );
         var stateActions = Set.of(
-                new FSMStateActions(State.S2, FSMTest::throwArithmeticException, this::emptyAction)
+                new FSMStateActions(State.S2, TestUtils::throwArithmeticException, TestUtils::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -298,7 +293,7 @@ class FSMTest {
         var transitionExceptionWasHandled = new AtomicBoolean(false);
 
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) {
             @Override
@@ -422,9 +417,9 @@ class FSMTest {
     @Test
     void testGeneratingPlantUmlStateDiagramCode() {
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::emptyAction),
-                new FSMTransition(State.S2, Event.E1, State.S1, this::emptyAction),
-                new FSMTransition(State.S2, Event.E2, State.S1, this::emptyAction)
+                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction),
+                new FSMTransition(State.S2, Event.E1, State.S1, TestUtils::emptyAction),
+                new FSMTransition(State.S2, Event.E2, State.S1, TestUtils::emptyAction)
         );
         var fsm = new AbstractFSM(State.S1) { };
         fsm.setTransitions(transitions);

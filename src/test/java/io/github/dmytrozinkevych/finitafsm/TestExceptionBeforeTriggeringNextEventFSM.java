@@ -2,6 +2,8 @@ package io.github.dmytrozinkevych.finitafsm;
 
 import java.util.Set;
 
+import static io.github.dmytrozinkevych.finitafsm.TestUtils.throwArithmeticException;
+
 public class TestExceptionBeforeTriggeringNextEventFSM extends AbstractFSM {
 
     protected TestExceptionBeforeTriggeringNextEventFSM() {
@@ -19,7 +21,7 @@ public class TestExceptionBeforeTriggeringNextEventFSM extends AbstractFSM {
 
     void actionWithTrigger(FSMState oldState, FSMEvent event, FSMState newState) {
         triggerAfterwards(Event.E2);
-        FSMTest.throwArithmeticException(oldState, event, newState);
+        throwArithmeticException(oldState, event, newState);
     }
 
     void regularAction(FSMState oldState, FSMEvent event, FSMState newState) { }
