@@ -377,7 +377,7 @@ class FSMTest {
 
     @Test
     void testResettingNextEventAfterExceptionOccurred() {
-        var fsm = spy(TestExceptionBeforeTriggeringNextEventFSM.class);
+        var fsm = spy(TestExceptionBeforeTriggeringNextEventFsm.class);
 
         fsm.trigger(Event.E1);
         assertEquals(State.S1, fsm.getCurrentState());

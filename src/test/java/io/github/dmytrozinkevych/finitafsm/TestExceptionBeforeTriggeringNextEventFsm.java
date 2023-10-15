@@ -4,9 +4,9 @@ import java.util.Set;
 
 import static io.github.dmytrozinkevych.finitafsm.TestUtils.throwArithmeticException;
 
-public class TestExceptionBeforeTriggeringNextEventFSM extends AbstractFSM {
+public class TestExceptionBeforeTriggeringNextEventFsm extends AbstractFSM {
 
-    protected TestExceptionBeforeTriggeringNextEventFSM() {
+    TestExceptionBeforeTriggeringNextEventFsm() {
         super(State.S1);
         var transitions = Set.of(
                 new FSMTransition(State.S1, Event.E1, State.S2, this::actionWithTrigger),
