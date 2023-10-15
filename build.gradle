@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.dmytrozinkevych.finita-fsm'
-version '0.3.3-SNAPSHOT'
+version '0.3.4-SNAPSHOT'
 
 apply plugin: 'java'
 java {
