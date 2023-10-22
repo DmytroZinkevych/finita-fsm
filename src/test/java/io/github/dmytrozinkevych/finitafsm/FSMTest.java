@@ -181,30 +181,37 @@ class FSMTest {
 
     @Test
     void testBeforeTransitionExceptionHandling() {
-        var transitionExceptionWasHandled = new AtomicBoolean(false);
+        class TransitionExceptionFsm extends FsmTemplate {
+            public TransitionExceptionFsm() {
+                super(State.S1);
+                var transitions = Set.of(
+                        new FSMTransition(State.S1, Event.E1, State.S2, this::transitionAction)
+                );
+                setTransitions(transitions);
 
-        var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, TestUtils::emptyAction)
-        );
-        var fsm = new AbstractFSM(State.S1) {
+                var stateActions = Set.of(
+                        new FSMStateActions(State.S1, this::onEnterState1, this::onExitState1),
+                        new FSMStateActions(State.S2, this::onEnterState2, this::onExitState2)
+                );
+                setStateActions(stateActions);
+            }
+
             @Override
             protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
-                throwArithmeticException(oldState, event, newState);
+                throwArithmeticException();
             }
-
-            @Override
-            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
-                if (transitionStage == FSMTransitionStage.BEFORE_TRANSITION) {
-                    transitionExceptionWasHandled.set(true);
-                    assertEquals(cause.getClass(), ArithmeticException.class);
-                }
-            }
-        };
-        fsm.setTransitions(transitions);
+        }
+        var fsm = spy(new TransitionExceptionFsm());
 
         fsm.trigger(Event.E1);
 
-        assertTrue(transitionExceptionWasHandled.get());
+        var inOrder = Mockito.inOrder(fsm);
+
+        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
+
+        inOrder.verifyNoMoreInteractions();
+
         assertEquals(State.S1, fsm.getCurrentState());
     }
 
