@@ -21,7 +21,7 @@ public class TestExceptionBeforeTriggeringNextEventFsm extends AbstractFSM {
 
     void actionWithTrigger(FSMState oldState, FSMEvent event, FSMState newState) {
         triggerAfterwards(Event.E2);
-        throwArithmeticException(oldState, event, newState);
+        throwArithmeticException();
     }
 
     void regularAction(FSMState oldState, FSMEvent event, FSMState newState) { }

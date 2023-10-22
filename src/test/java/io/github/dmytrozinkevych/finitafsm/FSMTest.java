@@ -298,7 +298,7 @@ class FSMTest {
         var fsm = new AbstractFSM(State.S1) {
             @Override
             protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
-                throwArithmeticException(oldState, event, newState);
+                throwArithmeticException();
             }
 
             @Override

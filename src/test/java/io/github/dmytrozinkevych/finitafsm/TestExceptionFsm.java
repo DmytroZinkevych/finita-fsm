@@ -22,7 +22,7 @@ public class TestExceptionFsm extends AbstractFSM {
 
     @Override
     protected void beforeEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
-        throwArithmeticException(oldState, event, newState);
+        throwArithmeticException();
     }
 
     @Override
