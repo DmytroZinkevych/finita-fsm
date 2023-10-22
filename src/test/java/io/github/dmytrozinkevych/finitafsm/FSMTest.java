@@ -10,7 +10,6 @@ import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static io.github.dmytrozinkevych.finitafsm.Event.*;
@@ -281,29 +280,23 @@ class FSMTest {
 
     @Test
     void testAfterTransitionExceptionHandling() {
-        var transitionExceptionWasHandled = new AtomicBoolean(false);
-
-        var transitions = Set.of(
-                new FSMTransition(STATE_1, EVENT_1, STATE_2, TestUtils::emptyAction)
-        );
-        var fsm = new AbstractFSM(STATE_1) {
-            @Override
-            protected void afterEachTransition(FSMState oldState, FSMEvent event, FSMState newState) {
-                throwArithmeticException();
-            }
-
-            @Override
-            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
-                transitionExceptionWasHandled.set(true);
-                assertEquals(FSMTransitionStage.AFTER_TRANSITION, transitionStage);
-                assertEquals(ArithmeticException.class, cause.getClass());
-            }
-        };
-        fsm.setTransitions(transitions);
+        var fsm = spy(TestAfterTransitionExceptionFsm.class);
 
         fsm.trigger(EVENT_1);
 
-        assertTrue(transitionExceptionWasHandled.get());
+        var inOrder = Mockito.inOrder(fsm);
+
+        inOrder.verify(fsm).trigger(EVENT_1);
+        inOrder.verify(fsm).beforeEachTransition(STATE_1, EVENT_1, STATE_2);
+        inOrder.verify(fsm).onExitState1(STATE_1, EVENT_1, STATE_2);
+        inOrder.verify(fsm).transitionAction(STATE_1, EVENT_1, STATE_2);
+        inOrder.verify(fsm).onEnterState2(STATE_1, EVENT_1, STATE_2);
+        inOrder.verify(fsm).afterEachTransition(STATE_1, EVENT_1, STATE_2);
+        inOrder.verify(fsm).onTransitionException(eq(STATE_1), eq(EVENT_1), eq(STATE_2), isA(ArithmeticException.class), eq(FSMTransitionStage.AFTER_TRANSITION));
+
+        allowNeutralInteractions(fsm);
+        verifyNoMoreInteractions(fsm);
+
         assertEquals(STATE_1, fsm.getCurrentState());
     }
 
