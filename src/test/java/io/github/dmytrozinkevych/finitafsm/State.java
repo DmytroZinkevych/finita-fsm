@@ -1,5 +1,5 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-enum State implements FSMState {
-    S1, S2, S3, S4
+public enum State implements FSMState {
+    STATE_1, STATE_2, STATE_3, STATE_4
 }
