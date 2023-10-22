@@ -2,16 +2,18 @@ package io.github.dmytrozinkevych.finitafsm;
 
 import java.util.Set;
 
+import static io.github.dmytrozinkevych.finitafsm.Event.*;
+import static io.github.dmytrozinkevych.finitafsm.State.*;
 import static io.github.dmytrozinkevych.finitafsm.TestUtils.throwArithmeticException;
 
 public class TestExceptionBeforeTriggeringNextEventFsm extends AbstractFSM {
 
     TestExceptionBeforeTriggeringNextEventFsm() {
-        super(State.S1);
+        super(STATE_1);
         var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::actionWithTrigger),
-                new FSMTransition(State.S2, Event.E2, State.S3, this::forbiddenAction),
-                new FSMTransition(State.S1, Event.E3, State.S2, this::regularAction)
+                new FSMTransition(STATE_1, EVENT_1, STATE_2, this::actionWithTrigger),
+                new FSMTransition(STATE_2, EVENT_2, STATE_3, this::forbiddenAction),
+                new FSMTransition(STATE_1, EVENT_3, STATE_2, this::regularAction)
         );
         setTransitions(transitions);
     }
@@ -20,7 +22,7 @@ public class TestExceptionBeforeTriggeringNextEventFsm extends AbstractFSM {
     protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) { }
 
     void actionWithTrigger(FSMState oldState, FSMEvent event, FSMState newState) {
-        triggerAfterwards(Event.E2);
+        triggerAfterwards(EVENT_2);
         throwArithmeticException();
     }
 

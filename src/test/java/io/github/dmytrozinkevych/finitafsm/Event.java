@@ -1,5 +1,5 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-enum Event implements FSMEvent {
-    E1, E2, E3
+public enum Event implements FSMEvent {
+    EVENT_1, EVENT_2, EVENT_3
 }

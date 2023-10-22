@@ -2,18 +2,22 @@ package io.github.dmytrozinkevych.finitafsm;
 
 import java.util.Set;
 
+import static io.github.dmytrozinkevych.finitafsm.Event.EVENT_1;
+import static io.github.dmytrozinkevych.finitafsm.State.STATE_1;
+import static io.github.dmytrozinkevych.finitafsm.State.STATE_2;
+
 public class TestOrderOfActionsFsm extends AbstractFSM {
 
     TestOrderOfActionsFsm() {
-        super(State.S1);
+        super(STATE_1);
         final var transitions = Set.of(
-                new FSMTransition(State.S1, Event.E1, State.S2, this::transitionAction)
+                new FSMTransition(STATE_1, EVENT_1, STATE_2, this::transitionAction)
         );
         setTransitions(transitions);
 
         var stateActions = Set.of(
-                new FSMStateActions(State.S1, this::onEnterState1, this::onExitState1),
-                new FSMStateActions(State.S2, this::onEnterState2, this::onExitState2)
+                new FSMStateActions(STATE_1, this::onEnterState1, this::onExitState1),
+                new FSMStateActions(STATE_2, this::onEnterState2, this::onExitState2)
         );
         setStateActions(stateActions);
     }
