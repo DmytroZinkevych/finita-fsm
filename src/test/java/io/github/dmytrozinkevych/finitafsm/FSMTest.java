@@ -208,9 +208,9 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
-        inOrder.verify(fsm, times(1)).trigger(Event.E1);
-        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
+        inOrder.verify(fsm).trigger(Event.E1);
+        inOrder.verify(fsm).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
 
         verifyNoMoreInteractions(fsm);
 
@@ -332,11 +332,11 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
-        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).transitionAction(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).onEnterState2(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).afterEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onExitState1(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).transitionAction(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onEnterState2(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).afterEachTransition(State.S1, Event.E1, State.S2);
 
         verify(fsm, never()).onEnterState1(any(), any(), any());
         verify(fsm, never()).onExitState2(any(), any(), any());
@@ -349,20 +349,20 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
-        inOrder.verify(fsm, times(1)).trigger(Event.E1);
-        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).transitionActionWithTriggerAfterwards(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).triggerAfterwards(Event.E2);
-        inOrder.verify(fsm, times(1)).onEnterState2(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).afterEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).trigger(Event.E1);
+        inOrder.verify(fsm).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onExitState1(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).transitionActionWithTriggerAfterwards(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).triggerAfterwards(Event.E2);
+        inOrder.verify(fsm).onEnterState2(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).afterEachTransition(State.S1, Event.E1, State.S2);
 
-        inOrder.verify(fsm, times(1)).trigger(Event.E2);
-        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S2, Event.E2, State.S3);
-        inOrder.verify(fsm, times(1)).onExitState2(State.S2, Event.E2, State.S3);
-        inOrder.verify(fsm, times(1)).regularTransitionAction(State.S2, Event.E2, State.S3);
-        inOrder.verify(fsm, times(1)).onEnterState3(State.S2, Event.E2, State.S3);
-        inOrder.verify(fsm, times(1)).afterEachTransition(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm).trigger(Event.E2);
+        inOrder.verify(fsm).beforeEachTransition(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm).onExitState2(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm).regularTransitionAction(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm).onEnterState3(State.S2, Event.E2, State.S3);
+        inOrder.verify(fsm).afterEachTransition(State.S2, Event.E2, State.S3);
 
         allowNeutralInteractions(fsm);
         verifyNoMoreInteractions(fsm);
@@ -377,9 +377,9 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
-        inOrder.verify(fsm, times(1)).trigger(Event.E1);
-        inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
+        inOrder.verify(fsm).trigger(Event.E1);
+        inOrder.verify(fsm).beforeEachTransition(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
 
         verifyNoMoreInteractions(fsm);
 
@@ -395,11 +395,11 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
-        inOrder.verify(fsm, times(1)).actionWithTrigger(State.S1, Event.E1, State.S2);
-        inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.TRANSITION_ACTION));
+        inOrder.verify(fsm).actionWithTrigger(State.S1, Event.E1, State.S2);
+        inOrder.verify(fsm).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.TRANSITION_ACTION));
 
         fsm.trigger(Event.E3);
-        inOrder.verify(fsm, times(1)).regularAction(State.S1, Event.E3, State.S2);
+        inOrder.verify(fsm).regularAction(State.S1, Event.E3, State.S2);
 
         assertEquals(State.S2, fsm.getCurrentState());
     }
