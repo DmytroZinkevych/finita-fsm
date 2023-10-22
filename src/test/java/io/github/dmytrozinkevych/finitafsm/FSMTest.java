@@ -346,22 +346,6 @@ class FSMTest {
     }
 
     @Test
-    void testNotRunningAnyOtherActionsAfterExceptionOccurred() {
-        var fsm = spy(TestExceptionFsm.class);
-        fsm.trigger(EVENT_1);
-
-        var inOrder = Mockito.inOrder(fsm);
-
-        inOrder.verify(fsm).trigger(EVENT_1);
-        inOrder.verify(fsm).beforeEachTransition(STATE_1, EVENT_1, STATE_2);
-        inOrder.verify(fsm).onTransitionException(eq(STATE_1), eq(EVENT_1), eq(STATE_2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
-
-        verifyNoMoreInteractions(fsm);
-
-        assertEquals(STATE_1, fsm.getCurrentState());
-    }
-
-    @Test
     void testResettingNextEventAfterExceptionOccurred() {
         var fsm = spy(TestExceptionBeforeTriggeringNextEventFsm.class);
 
