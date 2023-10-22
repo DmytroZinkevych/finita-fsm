@@ -221,29 +221,20 @@ class FSMTest {
 
     @Test
     void testExitStateExceptionHandling() {
-        var transitionExceptionWasHandled = new AtomicBoolean(false);
-
-        var transitions = Set.of(
-                new FSMTransition(STATE_1, EVENT_1, STATE_2, TestUtils::emptyAction)
-        );
-        var stateActions = Set.of(
-                new FSMStateActions(STATE_1, TestUtils::emptyAction, TestUtils::throwArithmeticException)
-        );
-        var fsm = new AbstractFSM(STATE_1) {
-            @Override
-            protected void onTransitionException(FSMState oldState, FSMEvent event, FSMState newState, Exception cause, FSMTransitionStage transitionStage) {
-                if (transitionStage == FSMTransitionStage.EXIT_OLD_STATE) {
-                    transitionExceptionWasHandled.set(true);
-                    assertEquals(cause.getClass(), ArithmeticException.class);
-                }
-            }
-        };
-        fsm.setTransitions(transitions);
-        fsm.setStateActions(stateActions);
+        var fsm = spy(TestExitStateExceptionFsm.class);
 
         fsm.trigger(EVENT_1);
 
-        assertTrue(transitionExceptionWasHandled.get());
+        var inOrder = Mockito.inOrder(fsm);
+
+        inOrder.verify(fsm).trigger(EVENT_1);
+        inOrder.verify(fsm).beforeEachTransition(STATE_1, EVENT_1, STATE_2);
+        inOrder.verify(fsm).onExitState1(STATE_1, EVENT_1, STATE_2);
+        inOrder.verify(fsm).onTransitionException(eq(STATE_1), eq(EVENT_1), eq(STATE_2), isA(ArithmeticException.class), eq(FSMTransitionStage.EXIT_OLD_STATE));
+
+        allowNeutralInteractions(fsm);
+        verifyNoMoreInteractions(fsm);
+
         assertEquals(STATE_1, fsm.getCurrentState());
     }
 

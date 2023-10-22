@@ -1,6 +1,6 @@
 package io.github.dmytrozinkevych.finitafsm;
 
-public class FsmTemplate extends AbstractFSM {
+public abstract class FsmTemplate extends AbstractFSM {
 
     FsmTemplate(FSMState initialState) {
         super(initialState);
