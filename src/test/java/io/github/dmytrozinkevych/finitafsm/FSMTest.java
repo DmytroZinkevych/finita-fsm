@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static io.github.dmytrozinkevych.finitafsm.TestUtils.allowNeutralInteractions;
 import static io.github.dmytrozinkevych.finitafsm.TestUtils.throwArithmeticException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -207,10 +208,11 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
+        inOrder.verify(fsm, times(1)).trigger(Event.E1);
         inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
 
-        inOrder.verifyNoMoreInteractions();
+        verifyNoMoreInteractions(fsm);
 
         assertEquals(State.S1, fsm.getCurrentState());
     }
@@ -347,6 +349,7 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
+        inOrder.verify(fsm, times(1)).trigger(Event.E1);
         inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).onExitState1(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).transitionActionWithTriggerAfterwards(State.S1, Event.E1, State.S2);
@@ -354,15 +357,15 @@ class FSMTest {
         inOrder.verify(fsm, times(1)).onEnterState2(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).afterEachTransition(State.S1, Event.E1, State.S2);
 
+        inOrder.verify(fsm, times(1)).trigger(Event.E2);
         inOrder.verify(fsm, times(1)).beforeEachTransition(State.S2, Event.E2, State.S3);
         inOrder.verify(fsm, times(1)).onExitState2(State.S2, Event.E2, State.S3);
         inOrder.verify(fsm, times(1)).regularTransitionAction(State.S2, Event.E2, State.S3);
         inOrder.verify(fsm, times(1)).onEnterState3(State.S2, Event.E2, State.S3);
         inOrder.verify(fsm, times(1)).afterEachTransition(State.S2, Event.E2, State.S3);
 
-        inOrder.verifyNoMoreInteractions();
-
-        verify(fsm, never()).triggerAfterwards(Event.E1);
+        allowNeutralInteractions(fsm);
+        verifyNoMoreInteractions(fsm);
 
         assertEquals(State.S3, fsm.getCurrentState());
     }
@@ -374,10 +377,11 @@ class FSMTest {
 
         var inOrder = Mockito.inOrder(fsm);
 
+        inOrder.verify(fsm, times(1)).trigger(Event.E1);
         inOrder.verify(fsm, times(1)).beforeEachTransition(State.S1, Event.E1, State.S2);
         inOrder.verify(fsm, times(1)).onTransitionException(eq(State.S1), eq(Event.E1), eq(State.S2), isA(ArithmeticException.class), eq(FSMTransitionStage.BEFORE_TRANSITION));
 
-        inOrder.verifyNoMoreInteractions();
+        verifyNoMoreInteractions(fsm);
 
         assertEquals(State.S1, fsm.getCurrentState());
     }
